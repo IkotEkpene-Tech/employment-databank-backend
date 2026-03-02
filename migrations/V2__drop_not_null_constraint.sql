@@ -1,0 +1,2 @@
+ALTER TABLE applicants
+ALTER COLUMN email DROP NOT NULL;
