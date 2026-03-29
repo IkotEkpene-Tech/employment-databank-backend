@@ -10,20 +10,44 @@ cloudinary.v2.config({
 	api_secret: `${configurations.CLOUDINARY_API_SECRET}`,
 });
 
-export const uploadFile = async (file: any, resourceType: 'raw' | 'image' | 'video' | 'auto' = 'auto') => {
-  try {
-    const result = await cloudinary.v2.uploader.upload(file.path, {
-      resource_type: resourceType,
-      public_id: file?.originalname,
-    });
-    return result.url;
-  } catch (e) {
-    console.error(e);
-  } finally {
-    fs.unlink(file.path, (err) => {
-      if (err) console.error("Failed to delete temp file:", err);
-    });
-  }
+export const uploadFile = async (file: any) => {
+	const ext = file?.originalname?.split('.').pop()?.toLowerCase();
+	const mimeType = file?.mimetype;
+	const sanitizedName = decodeURIComponent(file.originalname)
+		.replace(/\s+/g, '-')
+		.replace(/[^a-zA-Z0-9._-]/g, '');
+
+	let resourceType: any = 'auto';
+
+	if (mimeType === 'application/pdf' || ext === 'pdf') {
+		resourceType = 'raw';
+	} else if (ext === 'csv') {
+		resourceType = 'raw';
+	} else if (mimeType?.startsWith('image/')) {
+		resourceType = 'image';
+	}
+
+	return cloudinary.v2.uploader
+		.upload(file.path, {
+			resource_type: resourceType,
+			public_id:
+				resourceType === 'raw'
+					? `${Date.now()}-${sanitizedName}`
+					: `${Date.now()}-${sanitizedName.replace(/\.[^/.]+$/, '')}`,
+			...(resourceType === 'raw' && {
+				format: ext,
+			}),
+		})
+		.then((result) => {
+			console.log(
+				`Upload successful: ${result.secure_url}, resource_type: ${result.resource_type}`
+			);
+			return result.secure_url;
+		})
+		.catch((e) => {
+			console.error('Cloudinary upload error:', e);
+			throw new Error('Failed to upload file');
+		});
 };
 
 export const uploadAnyFile = async (file: any) => {

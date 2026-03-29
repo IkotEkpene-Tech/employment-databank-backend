@@ -63,7 +63,7 @@ const submitApplicationService = errorUtilities.withServiceErrorHandling(
     let certificateUrl: any = null;
 
     if (file) {
-      const fileUrl = await uploadFile(file, "raw");
+      const fileUrl = await uploadFile(file);
 
       if (!fileUrl) {
         throw errorUtilities.createError(
