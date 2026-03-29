@@ -1,0 +1,2 @@
+ALTER TABLE applicants
+ADD COLUMN IF NOT EXISTS "applicantId" VARCHAR(255) NULL;

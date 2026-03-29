@@ -35,6 +35,11 @@ Applicants.init(
       allowNull: false,
     },
 
+    applicantId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
     village: {
       type: DataTypes.STRING,
       allowNull: false,

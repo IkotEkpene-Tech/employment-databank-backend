@@ -6,6 +6,7 @@ import { uploadFile } from "../../utilities/cloudinary/uploads";
 import responseUtilities from "../../utilities/responseHandlers/response.utilities";
 import { formatNigerianPhone } from "../../utilities/utils";
 import Ward from "../../models/wards/wardModel";
+import { generateApplicantId } from "../../helpers/shortCodeHelpers";
 
 const submitApplicationService = errorUtilities.withServiceErrorHandling(
   async (applicantPayload: any, file?: any) => {
@@ -22,8 +23,6 @@ const submitApplicationService = errorUtilities.withServiceErrorHandling(
       villageHeadName,
       villageHeadPhone,
     } = applicantPayload;
-
-    console.log("email", email);
 
     const [existingPhone, existingWard]: any = await Promise.all([
       Applicants.findOne({
@@ -73,6 +72,8 @@ const submitApplicationService = errorUtilities.withServiceErrorHandling(
       certificateUrl = fileUrl;
     }
 
+    const applicantId = await generateApplicantId(ward, village)
+
     const createApplicantPayload = (
       await Applicants.create({
         id: v4(),
@@ -84,6 +85,7 @@ const submitApplicationService = errorUtilities.withServiceErrorHandling(
         hasEducation,
         highestQualification,
         vocationalSkill,
+        applicantId,
         otherSkill,
         villageHeadName,
         villageHeadPhone,

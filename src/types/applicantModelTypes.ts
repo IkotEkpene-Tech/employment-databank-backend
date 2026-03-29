@@ -15,6 +15,7 @@ hasEducation: "yes" | "no";
 highestQualification:HighestQualification;
 vocationalSkill: string;
 otherSkill: string;
+applicantId?: string;
 villageHeadName: string;
 villageHeadPhone: string;
 certificateUrl: string;
@@ -48,6 +49,14 @@ export interface VillageAttributes {
   latitude?: number;
   longitude?: number;
   isActive: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface ApplicantIdCounterAttributes {
+  id: string;
+  prefix: string;
+  lastNumber: number;
   createdAt?: Date;
   updatedAt?: Date;
 }

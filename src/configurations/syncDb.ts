@@ -2,6 +2,7 @@ import { database } from "./database";
 import "../models/applicants/applicantModel"
 import "../models/villages/villageModel";
 import "../models/wards/wardModel";
+import "../models/idCounter/idCounterModel";
 
 
 export async function syncDatabases() {
