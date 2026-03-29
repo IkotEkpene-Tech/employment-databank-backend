@@ -12,9 +12,19 @@ Applicants.init(
       primaryKey: true,
     },
 
-    fullName: {
+    surname: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+
+    firstName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+
+    otherName: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
 
     email: {
@@ -74,6 +84,7 @@ Applicants.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
+
     certificateUrl: {
       type: DataTypes.TEXT,
       allowNull: true,

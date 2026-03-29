@@ -11,7 +11,9 @@ import { generateApplicantId } from "../../helpers/shortCodeHelpers";
 const submitApplicationService = errorUtilities.withServiceErrorHandling(
   async (applicantPayload: any, file?: any) => {
     const {
-      fullName,
+      firstName,
+      surname,
+      otherName,
       email,
       phoneNumber,
       ward,
@@ -77,7 +79,9 @@ const submitApplicationService = errorUtilities.withServiceErrorHandling(
     const createApplicantPayload = (
       await Applicants.create({
         id: v4(),
-        fullName,
+        firstName,
+        surname,
+        otherName,
         email,
         phoneNumber: formatNigerianPhone(phoneNumber),
         ward: existingWard?.name,

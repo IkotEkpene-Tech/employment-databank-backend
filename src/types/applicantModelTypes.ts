@@ -6,9 +6,11 @@ enum HighestQualification {
 }
 export interface ApplicantsAttributes {
 id: string;
-fullName: string;
 email: string;
 phoneNumber: string;
+surname: string;
+firstName: string;
+otherName?: string;
 ward: string;
 village: string;
 hasEducation: "yes" | "no";

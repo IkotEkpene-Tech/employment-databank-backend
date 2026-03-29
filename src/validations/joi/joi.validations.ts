@@ -133,12 +133,25 @@ enum highestQualificationEnum {
 }
 
 const applicantValidationSchema = Joi.object({
-  fullName: Joi.string().trim().min(2).max(100).required().messages({
-    "string.base": "Full name must be a string",
-    "string.empty": "Full name is required",
-    "string.min": "Full name must be at least 2 characters",
-    "string.max": "Full name must not exceed 100 characters",
-    "any.required": "Full name is required",
+  surname: Joi.string().trim().min(2).max(100).required().messages({
+    "string.base": "Surname must be a string",
+    "string.empty": "Surname is required",
+    "string.min": "Surname must be at least 2 characters",
+    "string.max": "Surname must not exceed 100 characters",
+    "any.required": "Surname is required",
+  }),
+
+  firstName: Joi.string().trim().min(2).max(100).required().messages({
+    "string.base": "First name must be a string",
+    "string.empty": "First name is required",
+    "string.min": "First name must be at least 2 characters",
+    "string.max": "First name must not exceed 100 characters",
+    "any.required": "First name is required",
+  }),
+
+  otherName: Joi.string().trim().max(100).optional().allow("", null).messages({
+    "string.base": "Other name must be a string",
+    "string.max": "Other name must not exceed 100 characters",
   }),
 
   phoneNumber: Joi.string().pattern(phoneRegex).required().messages({
@@ -195,8 +208,6 @@ const applicantValidationSchema = Joi.object({
       "any.required": "Please select your highest qualification",
     }),
 
-  // Note: File validation will be handled separately in middleware/controller
-  // This field is just to indicate that a file can be present
   certificate: Joi.any().optional(),
 
   vocationalSkill: Joi.string().trim().required().messages({
