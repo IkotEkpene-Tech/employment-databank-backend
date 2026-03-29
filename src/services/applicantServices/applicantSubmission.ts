@@ -72,7 +72,7 @@ const submitApplicationService = errorUtilities.withServiceErrorHandling(
       certificateUrl = fileUrl;
     }
 
-    const applicantId = await generateApplicantId(ward, village)
+    const applicantId = await generateApplicantId(existingWard.name, village)
 
     const createApplicantPayload = (
       await Applicants.create({
