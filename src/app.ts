@@ -1,3 +1,4 @@
+import rateLimit from "express-rate-limit";
 import applyAssociations from "./models/associations";
 import express, { NextFunction, Request, Response, Application } from "express";
 import helmet from "helmet";
@@ -13,8 +14,16 @@ const app: Application = express();
 
 app.disable("x-powered-by");
 
+const limiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  message: "Too many requests, please try again later",
+});
+
 // Model associations
 applyAssociations();
+
+app.use(limiter);
 
 app.use(helmet());
 
@@ -33,7 +42,7 @@ app.use(cors(corsOptions));
 app.use(logger("dev"));
 app.use(cookieParser());
 
-app.use('/api/v1', routers)
+app.use("/api/v1", routers);
 
 // Health Check
 app.get("/", (req: Request, res: Response) => {
@@ -42,7 +51,6 @@ app.get("/", (req: Request, res: Response) => {
 
 // Global Error Handler
 app.use(errorUtilities.globalErrorHandler);
-
 
 (async () => {
   await syncDatabases();
