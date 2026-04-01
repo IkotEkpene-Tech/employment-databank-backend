@@ -4,7 +4,7 @@ import Applicants from "../../models/applicants/applicantModel";
 import { errorUtilities } from "../../utilities";
 import { uploadFile } from "../../utilities/cloudinary/uploads";
 import responseUtilities from "../../utilities/responseHandlers/response.utilities";
-import { formatNigerianPhone } from "../../utilities/utils";
+import { formatNigerianPhone, toTitleCase } from "../../utilities/utils";
 import Ward from "../../models/wards/wardModel";
 import { generateApplicantId } from "../../helpers/shortCodeHelpers";
 import { hashForLookup } from "../../utilities/encryption/encryption";
@@ -35,6 +35,8 @@ const submitApplicationService = errorUtilities.withServiceErrorHandling(
       otherSkillAcquisition,
       villageHeadName,
       villageHeadPhone,
+      discipline,
+      otherDiscipline,
     } = applicantPayload;
 
     const ninHash = hashForLookup(nin);
@@ -81,7 +83,7 @@ const submitApplicationService = errorUtilities.withServiceErrorHandling(
 
     if (email && email.trim() !== "") {
       const existingEmail = await Applicants.findOne({
-        where: { email },
+        where: { email: email.trim().toLowerCase() },
         attributes: ["id", "email"],
       });
       if (existingEmail) {
@@ -133,28 +135,30 @@ const submitApplicationService = errorUtilities.withServiceErrorHandling(
     const createApplicantPayload = (
       await Applicants.create({
         id: v4(),
-        firstName,
-        surname,
+        firstName: toTitleCase(firstName),
+        surname: toTitleCase(surname),
         otherName: otherName || null,
-        email: email || null,
+        email: email ? email.trim().toLowerCase() : null,
         phoneNumber: formatNigerianPhone(phoneNumber),
         ward: existingWard.name,
         village,
-        nin,
-        vin,
+        nin: nin.trim(),
+        vin: vin.trim(),
         ninHash,
         vinHash,
         hasEducation,
+        discipline: discipline || null,
+        otherDiscipline: toTitleCase(otherDiscipline) || null,
         highestQualification: highestQualification || null,
         vocationalSkill,
         applicantId,
-        otherSkill: otherSkill || null,
+        otherSkill: toTitleCase(otherSkill) || null,
         gender,
         dateOfBirth,
         skillAcquisition: skillAcquisition || null,
-        otherSkillAcquisition: otherSkillAcquisition || null,
-        villageHeadName,
-        villageHeadPhone,
+        otherSkillAcquisition: toTitleCase(otherSkillAcquisition) || null,
+        villageHeadName: toTitleCase(villageHeadName),
+        villageHeadPhone: formatNigerianPhone(villageHeadPhone),
         certificateOfOrigin: certificateOfOriginUrl,
         certificateUrl: certificateUrl || null,
       })

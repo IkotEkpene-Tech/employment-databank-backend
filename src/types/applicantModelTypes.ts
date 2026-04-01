@@ -14,6 +14,8 @@ export interface ApplicantsAttributes {
   ward: string;
   village: string;
   hasEducation: "yes" | "no";
+  discipline: string;
+  otherDiscipline: string;
   highestQualification: HighestQualification;
   vocationalSkill: string;
   otherSkill: string;

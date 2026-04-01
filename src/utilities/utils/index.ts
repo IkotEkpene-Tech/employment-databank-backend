@@ -29,3 +29,13 @@ export function returnPhoneNumberWithoutFormat(phone: string): string {
 
   return "0" + cleaned;
 }
+
+export const toTitleCase = (
+  value: string | null | undefined | any,
+): string | null | any => {
+  if (!value || value.trim() === "") return null;
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/\b\w/g, (char:any) => char.toUpperCase());
+};

@@ -136,6 +136,15 @@ Applicants.init(
       type: DataTypes.ENUM("primary", "ssce", "ond", "hnd", "bsc", "post-bsc"),
       allowNull: true,
     },
+    discipline: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
+    otherDiscipline: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
 
     vocationalSkill: {
       type: DataTypes.STRING,

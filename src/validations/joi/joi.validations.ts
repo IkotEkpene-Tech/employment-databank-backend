@@ -89,7 +89,8 @@ const villageEntrySchema = Joi.object({
     .messages({
       "array.base": "Villages must be an array",
       "array.min": "At least one village must be provided",
-      "array.max": "Cannot add more than 100 villages per ward in a single request",
+      "array.max":
+        "Cannot add more than 100 villages per ward in a single request",
       "any.required": "Villages array is required",
     }),
 });
@@ -187,7 +188,8 @@ const applicantValidationSchema = Joi.object({
   phoneNumber: Joi.string().pattern(phoneRegex).required().messages({
     "string.base": "Phone number must be a string",
     "string.empty": "Phone number is required",
-    "string.pattern.base": "Enter a valid phone number (11 digits starting with 0)",
+    "string.pattern.base":
+      "Enter a valid phone number (11 digits starting with 0)",
     "any.required": "Phone number is required",
   }),
 
@@ -238,6 +240,34 @@ const applicantValidationSchema = Joi.object({
       "string.empty": "Please select your highest qualification",
       "any.only": "Invalid qualification selected",
       "any.required": "Please select your highest qualification",
+    }),
+
+  discipline: Joi.string()
+    .trim()
+    .when("hasEducation", {
+      is: "yes",
+      then: Joi.required(),
+      otherwise: Joi.optional().allow(null, ""),
+    })
+    .messages({
+      "string.base": "Discipline must be a string",
+      "string.empty": "Please select your discipline",
+      "any.required": "Please select your discipline",
+    }),
+
+  otherDiscipline: Joi.string()
+    .trim()
+    .max(200)
+    .when("discipline", {
+      is: "Other",
+      then: Joi.required(),
+      otherwise: Joi.optional().allow(null, ""),
+    })
+    .messages({
+      "string.base": "Discipline must be a string",
+      "string.empty": "Please specify your discipline",
+      "string.max": "Discipline must not exceed 200 characters",
+      "any.required": "Please specify your discipline",
     }),
 
   // certificate file is handled by multer — not in body
@@ -297,7 +327,8 @@ const applicantValidationSchema = Joi.object({
   villageHeadPhone: Joi.string().pattern(phoneRegex).required().messages({
     "string.base": "Village head phone number must be a string",
     "string.empty": "Village head phone number is required",
-    "string.pattern.base": "Enter a valid phone number (11 digits starting with 0)",
+    "string.pattern.base":
+      "Enter a valid phone number (11 digits starting with 0)",
     "any.required": "Village head phone number is required",
   }),
 
