@@ -7,9 +7,14 @@ import responseUtilities from "../../utilities/responseHandlers/response.utiliti
 import { formatNigerianPhone } from "../../utilities/utils";
 import Ward from "../../models/wards/wardModel";
 import { generateApplicantId } from "../../helpers/shortCodeHelpers";
+import { hashForLookup } from "../../utilities/encryption/encryption";
 
 const submitApplicationService = errorUtilities.withServiceErrorHandling(
-  async (applicantPayload: any, file?: any) => {
+  async (
+    applicantPayload: any,
+    certificateFile?: Express.Multer.File,
+    certificateOfOriginFile?: Express.Multer.File,
+  ) => {
     const {
       firstName,
       surname,
@@ -18,21 +23,40 @@ const submitApplicationService = errorUtilities.withServiceErrorHandling(
       phoneNumber,
       ward,
       village,
+      nin,
+      vin,
       hasEducation,
       highestQualification,
       vocationalSkill,
       otherSkill,
+      gender,
+      dateOfBirth,
+      skillAcquisition,
+      otherSkillAcquisition,
       villageHeadName,
       villageHeadPhone,
     } = applicantPayload;
 
-    const [existingPhone, existingWard]: any = await Promise.all([
-      Applicants.findOne({
-        where: { phoneNumber: formatNigerianPhone(phoneNumber) },
-        attributes: ["id", "phoneNumber"],
-      }),
-      Ward.findOne({ where: { id: ward }, attributes: ["id", "name"] }),
-    ]);
+    const ninHash = hashForLookup(nin);
+    const vinHash = hashForLookup(vin);
+
+    // ── Duplicate checks + ward lookup ──────────────────────────────────────
+    const [existingPhone, existingWard, existingNin, existingVin]: any =
+      await Promise.all([
+        Applicants.findOne({
+          where: { phoneNumber: formatNigerianPhone(phoneNumber) },
+          attributes: ["id", "phoneNumber"],
+        }),
+        Ward.findOne({ where: { id: ward }, attributes: ["id", "name"] }),
+        Applicants.findOne({
+          where: { ninHash },
+          attributes: ["id", "ninHash"],
+        }),
+        Applicants.findOne({
+          where: { vinHash },
+          attributes: ["id", "vinHash"],
+        }),
+      ]);
 
     if (existingPhone) {
       throw errorUtilities.createError(
@@ -40,6 +64,7 @@ const submitApplicationService = errorUtilities.withServiceErrorHandling(
         StatusCodes.BAD_REQUEST,
       );
     }
+
     if (email && email.trim() !== "") {
       const existingEmail = await Applicants.findOne({
         where: { email },
@@ -60,40 +85,78 @@ const submitApplicationService = errorUtilities.withServiceErrorHandling(
       );
     }
 
-    let certificateUrl: any = null;
-
-    if (file) {
-      const fileUrl = await uploadFile(file);
-
-      if (!fileUrl) {
-        throw errorUtilities.createError(
-          "File upload failed, please try process again",
-          StatusCodes.INTERNAL_SERVER_ERROR,
-        );
-      }
-      certificateUrl = fileUrl;
+    if (existingNin) {
+      throw errorUtilities.createError(
+        "NIN already registered",
+        StatusCodes.BAD_REQUEST,
+      );
     }
 
-    const applicantId = await generateApplicantId(existingWard.name, village)
+    if (existingVin) {
+      throw errorUtilities.createError(
+        "VIN already registered",
+        StatusCodes.BAD_REQUEST,
+      );
+    }
+
+    // ── Upload files in parallel ─────────────────────────────────────────────
+    // certificateOfOrigin is required on the frontend; we guard here too.
+    if (!certificateOfOriginFile) {
+      throw errorUtilities.createError(
+        "Certificate of Origin is required",
+        StatusCodes.BAD_REQUEST,
+      );
+    }
+
+    const [certificateUrl, certificateOfOriginUrl] = await Promise.all([
+      certificateFile ? uploadFile(certificateFile) : Promise.resolve(null),
+      uploadFile(certificateOfOriginFile),
+    ]);
+
+    if (!certificateOfOriginUrl) {
+      throw errorUtilities.createError(
+        "Certificate of Origin upload failed, please try again",
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    if (certificateFile && !certificateUrl) {
+      throw errorUtilities.createError(
+        "Certificate upload failed, please try again",
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    // ── Create applicant record ──────────────────────────────────────────────
+    const applicantId = await generateApplicantId(existingWard.name, village);
 
     const createApplicantPayload = (
       await Applicants.create({
         id: v4(),
         firstName,
         surname,
-        otherName,
-        email,
+        otherName: otherName || null,
+        email: email || null,
         phoneNumber: formatNigerianPhone(phoneNumber),
-        ward: existingWard?.name,
+        ward: existingWard.name,
         village,
+        nin,
+        vin,
+        ninHash,
+        vinHash,
         hasEducation,
-        highestQualification,
+        highestQualification: highestQualification || null,
         vocationalSkill,
         applicantId,
-        otherSkill,
+        otherSkill: otherSkill || null,
+        gender,
+        dateOfBirth,
+        skillAcquisition: skillAcquisition || null,
+        otherSkillAcquisition: otherSkillAcquisition || null,
         villageHeadName,
         villageHeadPhone,
-        certificateUrl,
+        certificateOfOrigin: certificateOfOriginUrl,
+        certificateUrl: certificateUrl || null,
       })
     ).get({ plain: true });
 

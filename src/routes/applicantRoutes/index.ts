@@ -12,7 +12,10 @@ const upload = multer({ dest: "uploads/" });
 
 router.post(
   "/submit-application",
-  upload.single("certificate"),
+  upload.fields([
+    { name: "certificate", maxCount: 1 },
+    { name: "certificateOfOrigin", maxCount: 1 },
+  ]),
   inputValidator(applicantValidationSchema),
   submitApplicationsController,
 );

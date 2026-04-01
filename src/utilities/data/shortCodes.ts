@@ -3,12 +3,13 @@ export const shortCodes: any = {
     { "village": "IKOT EKPENE", "code": "IKE" },
     { "village": "UTU EDEM USUNG", "code": "UEU" },
     { "village": "UTU IKPE", "code": "UIP" },
-    { "village": "ABIAKPO", "code": "ABP" }
+    { "village": "ABIAKPO EDEM IDIM", "code": "AEI" }
   ],
   "ward2": [
     { "village": "IBIAKPAN NTO AKAN", "code": "INA" },
     { "village": "IBIAKPAN IKOT OBIOEKERE", "code": "IIO" },
-    { "village": "IBIAKPAN AKANANWAN", "code": "IAK" }
+    { "village": "IBIAKPAN AKANANWAN", "code": "IAK" },
+    { "village": "URUK USO", "code": "UUS" }
   ],
   "ward3": [
     { "village": "ABIAKPO IKOT ESSIEN", "code": "AIE" },
@@ -45,17 +46,17 @@ export const shortCodes: any = {
   ],
   "ward9": [
     { "village": "NYARAENYIN NTONG UNO", "code": "NNU" },
-    { "village": "NYARAENYIN IKOT MKPO", "code": "NIM" },
+    { "village": "NYARAENYIN IKOT OKPO", "code": "NKO" },
     { "village": "IKOT UDO USUNG", "code": "IUU" },
     { "village": "IKOT OFFIONG", "code": "IOF" },
     { "village": "IKOT OTO", "code": "IOO" }
   ],
   "ward10": [
-    { "village": "IKOT USO UDO", "code": "IUO" },
-    { "village": "NTO OBIO EKONG", "code": "NOE" },
-    { "village": "NTO OBODOM", "code": "NOD" },
-    { "village": "ATA ESSIEN", "code": "AES" },
-    { "village": "IBIAKPAN", "code": "IBP" }
+    { "village": "IKOT USO UDO MBIASO", "code": "IUO" },
+    { "village": "NTO OBIO EKONG MBIASO", "code": "NOE" },
+    { "village": "NTO OBODOM MBIASO", "code": "NOD" },
+    { "village": "ATA ESSIEN MBIASO", "code": "AES" },
+    { "village": "IBIAKPAN IKOT INAM", "code": "III" }
   ],
   "ward11": [
     { "village": "ABIAKPO IKOT UDO OBORO", "code": "AUO" },

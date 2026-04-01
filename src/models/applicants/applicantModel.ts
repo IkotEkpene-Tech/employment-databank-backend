@@ -1,6 +1,7 @@
 import { DataTypes, Model } from "sequelize";
 import { database } from "../../configurations/database";
 import { ApplicantsAttributes } from "../../types/applicantModelTypes";
+import { decrypt, encrypt } from "../../utilities/encryption/encryption";
 
 export class Applicants extends Model<ApplicantsAttributes> {}
 
@@ -10,6 +11,77 @@ Applicants.init(
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
+    },
+
+    nin: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+      get() {
+        const raw = this.getDataValue("nin");
+        if (!raw) return null;
+        try {
+          return decrypt(JSON.parse(raw));
+        } catch {
+          return null;
+        }
+      },
+      set(value: string) {
+        this.setDataValue("nin", JSON.stringify(encrypt(value)));
+      },
+    },
+
+    vin: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+      get() {
+        const raw = this.getDataValue("vin");
+        if (!raw) return null;
+        try {
+          return decrypt(JSON.parse(raw));
+        } catch {
+          return null;
+        }
+      },
+      set(value: string) {
+        this.setDataValue("vin", JSON.stringify(encrypt(value)));
+      },
+    },
+
+    ninHash: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      unique: true,
+    },
+
+    vinHash: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      unique: true,
+    },
+
+    gender: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+
+    dateOfBirth: {
+      type: DataTypes.DATEONLY,
+      allowNull: false,
+    },
+
+    skillAcquisition: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
+    otherSkillAcquisition: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
+    certificateOfOrigin: {
+      type: DataTypes.TEXT,
+      allowNull: false,
     },
 
     surname: {

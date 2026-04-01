@@ -1,37 +1,46 @@
 enum HighestQualification {
-  primary = 'primary',
-  secondary = 'secondary',
-  tertiary = 'tertiary',
-  none = 'none'
+  primary = "primary",
+  secondary = "secondary",
+  tertiary = "tertiary",
+  none = "none",
 }
 export interface ApplicantsAttributes {
-id: string;
-email: string;
-phoneNumber: string;
-surname: string;
-firstName: string;
-otherName?: string;
-ward: string;
-village: string;
-hasEducation: "yes" | "no";
-highestQualification:HighestQualification;
-vocationalSkill: string;
-otherSkill: string;
-applicantId?: string;
-villageHeadName: string;
-villageHeadPhone: string;
-certificateUrl: string;
-certificateName?: string;
+  id: string;
+  email: string;
+  phoneNumber: string;
+  surname: string;
+  firstName: string;
+  otherName?: string;
+  ward: string;
+  village: string;
+  hasEducation: "yes" | "no";
+  highestQualification: HighestQualification;
+  vocationalSkill: string;
+  otherSkill: string;
+  gender: string;
+  dateOfBirth: Date;
+  skillAcquisition: string;
+  otherSkillAcquisition: string;
+  applicantId?: string;
+  nin: string;
+  vin: string;
+  ninHash: string;
+  vinHash: string;
+  villageHeadName: string;
+  villageHeadPhone: string;
+  certificateUrl: string | null;
+  certificateOfOrigin: string;
+  certificateName?: string;
 }
 
 export enum Roles {
   User = "user",
-  Admin = "admin"
+  Admin = "admin",
 }
 
 export const TokenDuration = {
-  accessTokenDuration: '3h',
-  refreshTokenDuration: '30d',
+  accessTokenDuration: "3h",
+  refreshTokenDuration: "30d",
 };
 
 export interface WardAttributes {

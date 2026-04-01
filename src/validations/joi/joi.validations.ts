@@ -13,22 +13,15 @@ const inputValidator = (schema: Joi.Schema): any => {
         stripUnknown: true, // Remove unknown fields
       });
 
+      console.log("Validation result:", { value });
+
       if (error) {
-        // Format all error messages
         const errorMessages = error.details.map((detail) =>
           detail.message.replace(/["\\]/g, ""),
         );
-
         throw new Error(`${errorMessages[0]}`);
-
-        // return response.status(400).json({
-        //   status: "error",
-        //   message: errorMessages[0], // First error for simple display
-        //   errors: errorMessages, // All errors for detailed debugging
-        // });
       }
 
-      // Replace request.body with validated/sanitized value
       request.body = value;
       return next();
     } catch (err: any) {
@@ -81,7 +74,6 @@ const villageEntrySchema = Joi.object({
     "string.uuid": "Ward ID must be a valid UUID",
     "any.required": "Ward ID is required",
   }),
-
   villages: Joi.array()
     .items(
       Joi.string().trim().min(1).max(255).required().messages({
@@ -97,8 +89,7 @@ const villageEntrySchema = Joi.object({
     .messages({
       "array.base": "Villages must be an array",
       "array.min": "At least one village must be provided",
-      "array.max":
-        "Cannot add more than 100 villages per ward in a single request",
+      "array.max": "Cannot add more than 100 villages per ward in a single request",
       "any.required": "Villages array is required",
     }),
 });
@@ -118,6 +109,7 @@ const addVillagesToWardValidation = Joi.object({
 });
 
 const phoneRegex = /^0[0-9]{10}$/;
+
 enum hasEducationEnum {
   yes = "yes",
   no = "no",
@@ -132,7 +124,45 @@ enum highestQualificationEnum {
   postBsc = "pst-bsc",
 }
 
+enum genderEnum {
+  male = "male",
+  female = "female",
+}
+
 const applicantValidationSchema = Joi.object({
+  // ── Identity fields (from NIN verification) ──────────────────────────────
+  nin: Joi.string().trim().length(11).required().messages({
+    "string.base": "NIN must be a string",
+    "string.empty": "NIN is required",
+    "string.length": "NIN must be exactly 11 digits",
+    "any.required": "NIN is required",
+  }),
+
+  vin: Joi.string().trim().min(19).required().messages({
+    "string.base": "VIN must be a string",
+    "string.empty": "Voter Identification Number (VIN) is required",
+    "string.min": "VIN must be at least 19 characters",
+    "any.required": "Voter Identification Number (VIN) is required",
+  }),
+
+  gender: Joi.string()
+    .valid(...Object.values(genderEnum))
+    .required()
+    .messages({
+      "string.base": "Gender must be a string",
+      "string.empty": "Please select your gender",
+      "any.only": "Gender must be either 'male' or 'female'",
+      "any.required": "Please select your gender",
+    }),
+
+  // dateOfBirth is sent as a string from the frontend (e.g. "14 Mar 1995")
+  dateOfBirth: Joi.string().trim().required().messages({
+    "string.base": "Date of birth must be a string",
+    "string.empty": "Date of birth is required",
+    "any.required": "Date of birth is required",
+  }),
+
+  // ── Personal info ─────────────────────────────────────────────────────────
   surname: Joi.string().trim().min(2).max(100).required().messages({
     "string.base": "Surname must be a string",
     "string.empty": "Surname is required",
@@ -157,7 +187,7 @@ const applicantValidationSchema = Joi.object({
   phoneNumber: Joi.string().pattern(phoneRegex).required().messages({
     "string.base": "Phone number must be a string",
     "string.empty": "Phone number is required",
-    "string.pattern.base": "Enter a valid phone number (10-11 digits)",
+    "string.pattern.base": "Enter a valid phone number (11 digits starting with 0)",
     "any.required": "Phone number is required",
   }),
 
@@ -172,6 +202,7 @@ const applicantValidationSchema = Joi.object({
       "string.email": "Enter a valid email address",
     }),
 
+  // ── Location ──────────────────────────────────────────────────────────────
   ward: Joi.string().trim().required().messages({
     "string.base": "Ward must be a string",
     "string.empty": "Please select your ward",
@@ -184,6 +215,7 @@ const applicantValidationSchema = Joi.object({
     "any.required": "Please select your village",
   }),
 
+  // ── Education ─────────────────────────────────────────────────────────────
   hasEducation: Joi.string()
     .valid(...Object.values(hasEducationEnum))
     .required()
@@ -208,12 +240,14 @@ const applicantValidationSchema = Joi.object({
       "any.required": "Please select your highest qualification",
     }),
 
+  // certificate file is handled by multer — not in body
   certificate: Joi.any().optional(),
 
+  // ── Skills ────────────────────────────────────────────────────────────────
   vocationalSkill: Joi.string().trim().required().messages({
-    "string.base": "Vocational skill must be a string",
-    "string.empty": "Please select a vocational skill",
-    "any.required": "Please select a vocational skill",
+    "string.base": "Skill must be a string",
+    "string.empty": "Please select a skill",
+    "any.required": "Please select a skill",
   }),
 
   otherSkill: Joi.string()
@@ -231,6 +265,27 @@ const applicantValidationSchema = Joi.object({
       "any.required": "Please specify your skill",
     }),
 
+  skillAcquisition: Joi.string().trim().optional().allow("", null).messages({
+    "string.base": "Skill acquisition must be a string",
+    "string.max": "Skill acquisition must not exceed 200 characters",
+  }),
+
+  otherSkillAcquisition: Joi.string()
+    .trim()
+    .max(200)
+    .when("skillAcquisition", {
+      is: "Other",
+      then: Joi.required(),
+      otherwise: Joi.optional().allow(null, ""),
+    })
+    .messages({
+      "string.base": "Other skill acquisition must be a string",
+      "string.empty": "Please specify the skill you want to learn",
+      "string.max": "Must not exceed 200 characters",
+      "any.required": "Please specify the skill you want to learn",
+    }),
+
+  // ── Village authority ─────────────────────────────────────────────────────
   villageHeadName: Joi.string().trim().min(2).max(100).required().messages({
     "string.base": "Village head name must be a string",
     "string.empty": "Village head name is required",
@@ -242,9 +297,12 @@ const applicantValidationSchema = Joi.object({
   villageHeadPhone: Joi.string().pattern(phoneRegex).required().messages({
     "string.base": "Village head phone number must be a string",
     "string.empty": "Village head phone number is required",
-    "string.pattern.base": "Enter a valid phone number (10-11 digits)",
+    "string.pattern.base": "Enter a valid phone number (11 digits starting with 0)",
     "any.required": "Village head phone number is required",
   }),
+
+  // certificateOfOrigin file is handled by multer — not in body
+  certificateOfOrigin: Joi.any().optional(),
 }).strict();
 
 export {

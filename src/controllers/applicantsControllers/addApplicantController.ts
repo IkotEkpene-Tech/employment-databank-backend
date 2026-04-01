@@ -1,19 +1,24 @@
 import { Request, Response } from "express";
 import { errorUtilities } from "../../utilities";
 import responseUtilities from "../../utilities/responseHandlers/response.utilities";
-import multer from "multer";
 import submitApplicationService from "../../services/applicantServices/applicantSubmission";
 
 const submitApplicationsController = errorUtilities.withControllerErrorHandling(
   async (
-    request: Request & { file?: Express.Multer.File },
+    request: Request & { files?: { [fieldname: string]: Express.Multer.File[] } },
     response: Response,
   ) => {
     const payload = request.body;
+    const files = request.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
+    
+    const certificate = files?.certificate?.[0];
+    const certificateOfOrigin = files?.certificateOfOrigin?.[0];
 
-    const { file } = request;
-
-    const submitApplication = await submitApplicationService(payload, file);
+    const submitApplication = await submitApplicationService(
+      payload,
+      certificate,
+      certificateOfOrigin,
+    );
 
     return responseUtilities.responseHandler(
       response,
