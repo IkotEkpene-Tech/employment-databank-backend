@@ -58,6 +58,20 @@ const submitApplicationService = errorUtilities.withServiceErrorHandling(
         }),
       ]);
 
+    if (existingNin) {
+      throw errorUtilities.createError(
+        "NIN already registered",
+        StatusCodes.BAD_REQUEST,
+      );
+    }
+
+    if (existingVin) {
+      throw errorUtilities.createError(
+        "VIN already registered",
+        StatusCodes.BAD_REQUEST,
+      );
+    }
+
     if (existingPhone) {
       throw errorUtilities.createError(
         "Phone Number already registered",
@@ -82,20 +96,6 @@ const submitApplicationService = errorUtilities.withServiceErrorHandling(
       throw errorUtilities.createError(
         "Ward not found, please refresh page and try again",
         StatusCodes.NOT_FOUND,
-      );
-    }
-
-    if (existingNin) {
-      throw errorUtilities.createError(
-        "NIN already registered",
-        StatusCodes.BAD_REQUEST,
-      );
-    }
-
-    if (existingVin) {
-      throw errorUtilities.createError(
-        "VIN already registered",
-        StatusCodes.BAD_REQUEST,
       );
     }
 
