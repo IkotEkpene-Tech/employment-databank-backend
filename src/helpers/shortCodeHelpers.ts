@@ -18,7 +18,7 @@ const getVillageCode = (wardName: string, villageName: string): string => {
   }
 
   const match = villages.find(
-    (v:any) => v.village.toUpperCase() === villageName.toUpperCase()
+    (v: any) => v.village.toUpperCase() === villageName.toUpperCase(),
   );
 
   if (!match) {
@@ -39,7 +39,7 @@ const getVillageCode = (wardName: string, villageName: string): string => {
 const generateApplicantId = async (
   wardName: string,
   villageName: string,
-  transaction?: Transaction
+  transaction?: Transaction,
 ): Promise<string> => {
   const lgaCode = "IK";
   const wardNumber = wardName.toString().replace(/\D/g, "").padStart(2, "0");
@@ -49,20 +49,21 @@ const generateApplicantId = async (
   const tx = transaction ?? null;
 
   try {
-    let counter:ApplicantIdCounterAttributes | any = await ApplicantIdCounter.findOne({ where: { prefix } });
+    let counter: ApplicantIdCounterAttributes | any =
+      await ApplicantIdCounter.findOne({ where: { prefix } });
     let nextNumber: number;
 
     if (!counter) {
       await ApplicantIdCounter.create(
         { id: v4(), prefix, lastNumber: 1 },
-        { transaction: tx }
+        { transaction: tx },
       );
       nextNumber = 1;
     } else {
       nextNumber = counter.lastNumber + 1;
       await ApplicantIdCounter.update(
         { lastNumber: nextNumber },
-        { where: { prefix }, transaction: tx }
+        { where: { prefix }, transaction: tx },
       );
     }
 
@@ -71,7 +72,7 @@ const generateApplicantId = async (
   } catch (error) {
     console.error("Error generating applicant ID:", error);
     throw new Error(
-      `Failed to generate applicant ID for ward "${wardName}", village "${villageName}": ${error}`
+      `Failed to generate applicant ID for ward "${wardName}", village "${villageName}": ${error}`,
     );
   }
 };

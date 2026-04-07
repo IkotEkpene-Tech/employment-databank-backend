@@ -1,5 +1,3 @@
-
-
 export enum StatusCodes {
   // 1xx Informational
   CONTINUE = 100,
@@ -18,7 +16,7 @@ export enum StatusCodes {
   MULTI_STATUS = 207,
   ALREADY_REPORTED = 208,
   IM_USED = 226,
-//employment-databank-backend
+  //employment-databank-backend
   // 3xx Redirection
   MULTIPLE_CHOICES = 300,
   MOVED_PERMANENTLY = 301,
@@ -71,8 +69,7 @@ export enum StatusCodes {
   INSUFFICIENT_STORAGE = 507,
   LOOP_DETECTED = 508,
   NOT_EXTENDED = 510,
-  NETWORK_AUTHENTICATION_REQUIRED = 511
+  NETWORK_AUTHENTICATION_REQUIRED = 511,
 }
-
 
 export default StatusCodes;

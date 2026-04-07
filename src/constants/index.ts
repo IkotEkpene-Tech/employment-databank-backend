@@ -1,5 +1,3 @@
-import StatusCodes from './statusCodes.constants';
+import StatusCodes from "./statusCodes.constants";
 
-export {
-    StatusCodes,
-}
+export { StatusCodes };

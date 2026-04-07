@@ -2,8 +2,6 @@ import brcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 
-
-
 function generateNumericOtp(length: number = 6): string {
   const max = 10 ** length;
   const otp = crypto.randomInt(0, max).toString();
@@ -17,7 +15,8 @@ const hashData = async (data: string): Promise<string> => {
 };
 
 function generateAlphaNumericOtp(length: number = 6): string {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   const bytes = crypto.randomBytes(length);
   let otp = "";
 
@@ -31,14 +30,14 @@ function generateAlphaNumericOtp(length: number = 6): string {
 
 const validatePassword = async (
   password: string,
-  userPassword: string
+  userPassword: string,
 ): Promise<boolean> => {
   return await brcrypt.compare(password, userPassword);
 };
 
 const generateTokens = (
   payload: Record<string, any>,
-  expiresIn: any = "15h"
+  expiresIn: any = "15h",
 ): string => {
   return jwt.sign(payload, `${process.env.APP_SECRET}`, {
     expiresIn: expiresIn,

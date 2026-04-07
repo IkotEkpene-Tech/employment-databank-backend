@@ -11,7 +11,6 @@ interface ApplicantIdCounterAttributes {
 
 export class ApplicantIdCounter extends Model<ApplicantIdCounterAttributes> {}
 
-
 ApplicantIdCounter.init(
   {
     id: {
@@ -36,7 +35,7 @@ ApplicantIdCounter.init(
     sequelize: database,
     tableName: "applicant_id_counters",
     timestamps: true,
-  }
+  },
 );
 
 export default ApplicantIdCounter;

@@ -5,12 +5,16 @@ import submitApplicationService from "../../services/applicantServices/applicant
 
 const submitApplicationsController = errorUtilities.withControllerErrorHandling(
   async (
-    request: Request & { files?: { [fieldname: string]: Express.Multer.File[] } },
+    request: Request & {
+      files?: { [fieldname: string]: Express.Multer.File[] };
+    },
     response: Response,
   ) => {
     const payload = request.body;
-    const files = request.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
-    
+    const files = request.files as
+      | { [fieldname: string]: Express.Multer.File[] }
+      | undefined;
+
     const certificate = files?.certificate?.[0];
     const certificateOfOrigin = files?.certificateOfOrigin?.[0];
 

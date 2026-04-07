@@ -25,7 +25,7 @@ const addVillagesToWardService = errorUtilities.withServiceErrorHandling(
       wardId: string;
     }> = [];
 
-    const wardIds = [...new Set(data.map(item => item.wardId))];
+    const wardIds = [...new Set(data.map((item) => item.wardId))];
 
     let createdVillages: any[] = [];
 
@@ -42,11 +42,11 @@ const addVillagesToWardService = errorUtilities.withServiceErrorHandling(
 
         const existingWardIds = existingWards.map((ward: any) => ward.id);
 
-        const invalidWard = wardIds.find(id => !existingWardIds.includes(id));
+        const invalidWard = wardIds.find((id) => !existingWardIds.includes(id));
         if (invalidWard) {
           throw errorUtilities.createError(
             `WARD WITH ID '${invalidWard}' DOES NOT EXIST`,
-            StatusCodes.NOT_FOUND
+            StatusCodes.NOT_FOUND,
           );
         }
 
@@ -79,7 +79,7 @@ const addVillagesToWardService = errorUtilities.withServiceErrorHandling(
         // Check for existing villages
         const existingVillages = await Village.findAll({
           where: {
-            [Op.or]: uniqueVillages.map(v => ({
+            [Op.or]: uniqueVillages.map((v) => ({
               name: v.name,
               wardId: v.wardId,
             })),
@@ -89,17 +89,19 @@ const addVillagesToWardService = errorUtilities.withServiceErrorHandling(
         });
 
         const existingSet = new Set(
-          existingVillages.map((village: any) => `${village.name}-${village.wardId}`)
+          existingVillages.map(
+            (village: any) => `${village.name}-${village.wardId}`,
+          ),
         );
 
         const finalVillages = uniqueVillages.filter(
-          v => !existingSet.has(`${v.name}-${v.wardId}`)
+          (v) => !existingSet.has(`${v.name}-${v.wardId}`),
         );
 
         if (finalVillages.length === 0) {
           throw errorUtilities.createError(
             "ALL VILLAGES ALREADY EXIST IN THE SPECIFIED WARDS",
-            StatusCodes.CONFLICT
+            StatusCodes.CONFLICT,
           );
         }
 
@@ -118,15 +120,15 @@ const addVillagesToWardService = errorUtilities.withServiceErrorHandling(
           totalInserted: createdVillages.length,
           skippedDuplicates: villagesToCreate.length - createdVillages.length,
           data: createdVillages,
-        }
+        },
       );
     }
 
     return responseUtilities.handleServicesResponse(
       StatusCodes.INTERNAL_SERVER_ERROR,
-      "Unable to add village(s), please try again"
+      "Unable to add village(s), please try again",
     );
-  }
+  },
 );
 
 export default addVillagesToWardService;
