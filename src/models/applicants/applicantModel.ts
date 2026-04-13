@@ -32,7 +32,7 @@ Applicants.init(
 
     vin: {
       type: DataTypes.TEXT,
-      allowNull: false,
+      allowNull: true,
       get() {
         const raw = this.getDataValue("vin");
         if (!raw) return null;
@@ -61,12 +61,12 @@ Applicants.init(
 
     gender: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
 
     dateOfBirth: {
       type: DataTypes.DATEONLY,
-      allowNull: false,
+      allowNull: true,
     },
 
     skillAcquisition: {
@@ -81,7 +81,7 @@ Applicants.init(
 
     certificateOfOrigin: {
       type: DataTypes.TEXT,
-      allowNull: false,
+      allowNull: true,
     },
 
     surname: {
@@ -114,7 +114,7 @@ Applicants.init(
 
     ward: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
 
     applicantId: {
@@ -124,12 +124,12 @@ Applicants.init(
 
     village: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
 
     hasEducation: {
       type: DataTypes.ENUM("yes", "no"),
-      allowNull: false,
+      allowNull: true,
     },
 
     highestQualification: {
@@ -158,12 +158,12 @@ Applicants.init(
 
     villageHeadName: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
 
     villageHeadPhone: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
 
     certificateUrl: {

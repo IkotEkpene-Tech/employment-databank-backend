@@ -7,30 +7,23 @@ const inputValidator = (schema: Joi.Schema): any => {
     response: Response,
     next: NextFunction,
   ): Promise<any> => {
-    try {
-      const { error, value } = schema.validate(request.body, {
-        abortEarly: false, // Show all errors, not just the first one
-        stripUnknown: true, // Remove unknown fields
-      });
+    const { error, value } = schema.validate(request.body, {
+      abortEarly: false,
+      stripUnknown: true,
+    });
 
-      console.log("Validation result:", { value });
-
-      if (error) {
-        const errorMessages = error.details.map((detail) =>
-          detail.message.replace(/["\\]/g, ""),
-        );
-        throw new Error(`${errorMessages[0]}`);
-      }
-
-      request.body = value;
-      return next();
-    } catch (err: any) {
-      console.error("Validation error:", err);
-      return response.status(500).json({
+    if (error) {
+      const errorMessages = error.details.map((detail) =>
+        detail.message.replace(/["\\]/g, ""),
+      );
+      return response.status(400).json({
         status: "error",
-        message: "Internal Server Error during validation",
+        message: errorMessages[0],
       });
     }
+
+    request.body = value;
+    return next();
   };
 };
 
@@ -336,10 +329,101 @@ const applicantValidationSchema = Joi.object({
   certificateOfOrigin: Joi.any().optional(),
 }).strict();
 
+const applicantRetrievalValidationSchema = Joi.object({
+  phoneNumber: Joi.string().pattern(phoneRegex).required().messages({
+    "string.base": "Phone number must be a string",
+    "string.empty": "Phone number is required",
+    "string.pattern.base":
+      "Enter a valid phone number (11 digits starting with 0)",
+    "any.required": "Phone number is required",
+  }),
+});
+
+const applicantNinVerificationSchema = Joi.object({
+  phoneNumber: Joi.string().pattern(phoneRegex).required().messages({
+    "string.base": "Phone number must be a string",
+    "string.empty": "Phone number is required",
+    "string.pattern.base":
+      "Enter a valid phone number (11 digits starting with 0)",
+    "any.required": "Phone number is required",
+  }),
+  nin: Joi.string().trim().length(11).required().messages({
+    "string.base": "NIN must be a string",
+    "string.empty": "NIN is required",
+    "string.length": "NIN must be exactly 11 digits",
+    "any.required": "NIN is required",
+  }),
+  accessCode: Joi.string().trim().length(12).required().messages({
+    "string.base": "Access Code must be a string",
+    "string.empty": "Access Code is required",
+    "string.length": "Access Code must be exactly 12 digits",
+    "any.required": "Access Code is required",
+  }),
+});
+
+
+const saveApplicantNinDataValidationSchema = Joi.object({
+  firstname: Joi.string().trim().required().messages({
+    "string.base": "First name must be a string",
+    "string.empty": "First name is required",
+    "any.required": "First name is required",
+  }),
+
+  surname: Joi.string().trim().required().messages({
+    "string.base": "Surname must be a string",
+    "string.empty": "Surname is required",
+    "any.required": "Surname is required",
+  }),
+
+  middlename: Joi.string().trim().allow("", null).optional().messages({
+    "string.base": "Middle name must be a string",
+  }),
+
+  phoneNumber: Joi.string().pattern(phoneRegex).required().messages({
+    "string.base": "Phone number must be a string",
+    "string.empty": "Phone number is required",
+    "string.pattern.base":
+      "Enter a valid phone number (11 digits starting with 0)",
+    "any.required": "Phone number is required",
+  }),
+
+  birthdate: Joi.alternatives()
+    .try(Joi.date().iso(), Joi.string().trim())
+    .required()
+    .messages({
+      "alternatives.match": "Birthdate must be a valid date",
+      "any.required": "Birthdate is required",
+    }),
+
+  photo: Joi.string().uri().allow("", null).optional().messages({
+    "string.base": "Photo must be a string",
+    "string.uri": "Photo must be a valid URL",
+  }),
+
+  nin: Joi.string()
+    .pattern(/^\d{11}$/)
+    .required()
+    .messages({
+      "string.base": "NIN must be a string",
+      "string.empty": "NIN is required",
+      "string.pattern.base": "NIN must be exactly 11 digits",
+      "any.required": "NIN is required",
+    }),
+
+  accessCode: Joi.string().trim().required().messages({
+    "string.base": "Access code must be a string",
+    "string.empty": "Access code is required",
+    "any.required": "Access code is required",
+  }),
+});
+
 export {
   inputValidator,
   wardSchema,
   addWardValidation,
   addVillagesToWardValidation,
   applicantValidationSchema,
+  applicantRetrievalValidationSchema,
+  applicantNinVerificationSchema,
+  saveApplicantNinDataValidationSchema
 };

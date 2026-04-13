@@ -1,4 +1,3 @@
-import rateLimit from "express-rate-limit";
 import applyAssociations from "./models/associations";
 import express, { NextFunction, Request, Response, Application } from "express";
 import helmet from "helmet";
@@ -14,20 +13,17 @@ const app: Application = express();
 
 app.disable("x-powered-by");
 
-const limiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 10,
-  message: "Too many requests, please try again later",
-});
+app.set("trust proxy", 1);
 
 // Model associations
 applyAssociations();
 
-app.use(limiter);
-
 app.use(helmet());
 
 app.use(express.urlencoded({ extended: true }));
+
+app.use("/api/v1/payments/webhook", express.raw({ type: "application/json" }));
+
 app.use(express.json());
 
 const corsOptions = {

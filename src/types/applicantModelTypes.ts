@@ -6,32 +6,33 @@ enum HighestQualification {
 }
 export interface ApplicantsAttributes {
   id: string;
-  email: string;
+  email?: string;
   phoneNumber: string;
   surname: string;
   firstName: string;
   otherName?: string;
-  ward: string;
-  village: string;
-  hasEducation: "yes" | "no";
-  discipline: string;
-  otherDiscipline: string;
-  highestQualification: HighestQualification;
-  vocationalSkill: string;
-  otherSkill: string;
-  gender: string;
+  ward?: string;
+  village?: string;
+  hasEducation?: "yes" | "no";
+  discipline?: string;
+  otherDiscipline?: string;
+  highestQualification?: HighestQualification;
+  vocationalSkill?: string;
+  otherSkill?: string;
+  gender?: string;
   dateOfBirth: Date;
-  skillAcquisition: string;
-  otherSkillAcquisition: string;
+  skillAcquisition?: string;
+  otherSkillAcquisition?: string;
   applicantId?: string;
   nin: string;
-  vin: string;
+  vin?: string;
   ninHash: string;
-  vinHash: string;
-  villageHeadName: string;
-  villageHeadPhone: string;
-  certificateUrl: string | null;
-  certificateOfOrigin: string;
+  vinHash?: string;
+  photo?: string;
+  villageHeadName?: string;
+  villageHeadPhone?: string;
+  certificateUrl?: string | null;
+  certificateOfOrigin?: string;
   certificateName?: string;
 }
 
