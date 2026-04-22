@@ -1,0 +1,2 @@
+ALTER TABLE access_codes
+ADD COLUMN IF NOT EXISTS email TEXT NULL;

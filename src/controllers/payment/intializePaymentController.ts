@@ -4,15 +4,15 @@ import responseUtilities from "../../utilities/responseHandlers/response.utiliti
 import initializePaystackPaymentService from "../../services/paymentServices/initializePayment";
 
 const intializePaymentController = errorUtilities.withControllerErrorHandling(
-  async (
-    request: Request,
-    response: Response,
-  ) => {
-    const { phoneNumber } = request.body;
+  async (request: Request, response: Response) => {
+    const { phoneNumber, email, isNotNew } = request.body;
 
-    const email = `${phoneNumber}@ikjobportal.com.ng`;
-
-    const checkApplicant = await initializePaystackPaymentService(phoneNumber, email);
+    const checkApplicant = await initializePaystackPaymentService(
+      phoneNumber,
+      email,
+      request,
+      isNotNew,
+    );
 
     return responseUtilities.responseHandler(
       response,

@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction, ErrorRequestHandler } from "express";
 
-const createError = (message: string, statusCode: number, data?:any) => ({
+const createError = (message: string, statusCode: number, data?: any) => ({
   message,
   statusCode,
   data,
@@ -32,17 +32,36 @@ const withControllerErrorHandling = (fn: (...args: any[]) => Promise<any>) => {
       await fn(req, res, next);
     } catch (error) {
       next(error);
-      console.log('error:', error);
+      console.log("error:", error);
     }
   };
 };
 
-const withServiceErrorHandling = (fn: (...args: any[]) => Promise<any>) => {
+// const withServiceErrorHandling = (fn: (...args: any[]) => Promise<any>) => {
+//   return async (...args: any[]) => {
+//     try {
+//       return await fn(...args);
+//     } catch (error: any) {
+//       console.error("Service error:", error.message);
+//       throw error;
+//     }
+//   };
+// };
+
+const withServiceErrorHandling = (
+  fn: (...args: any[]) => Promise<any>,
+) => {
   return async (...args: any[]) => {
     try {
       return await fn(...args);
     } catch (error: any) {
-      console.error("Service error:", error.message);
+      // Find the Request object among the args
+      const request = args.find((arg) => arg?.path && arg?.method);
+      console.error(
+        "Service error:",
+        request?.path ?? "unknown path",
+        error.message,
+      );
       throw error;
     }
   };
@@ -52,7 +71,7 @@ const globalErrorHandler: ErrorRequestHandler = (
   err: any,
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): any => {
   const errorResponse = err.isOperational ? err : createUnknownError(err);
 

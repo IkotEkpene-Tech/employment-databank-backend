@@ -29,6 +29,7 @@ export interface ApplicantsAttributes {
   ninHash: string;
   vinHash?: string;
   photo?: string;
+  accessCode?: string;
   villageHeadName?: string;
   villageHeadPhone?: string;
   certificateUrl?: string | null;
