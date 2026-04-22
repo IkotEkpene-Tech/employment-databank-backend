@@ -1,6 +1,8 @@
 import Joi from "joi";
 import { Request, Response, NextFunction } from "express";
 
+const fullNameRegex = /^\s*\S+\s+\S+.*$/;
+
 const inputValidator = (schema: Joi.Schema): any => {
   return async (
     request: Request,
@@ -325,6 +327,13 @@ const applicantValidationSchema = Joi.object({
     "any.required": "Village head phone number is required",
   }),
 
+  accessCode: Joi.string().trim().length(12).required().messages({
+    "string.base": "Access code must be a string",
+    "string.empty": "Access code is required",
+    "string.length": "Access code must be exactly 12 characters",
+    "any.required": "Access code is required",
+  }),
+
   // certificateOfOrigin file is handled by multer — not in body
   certificateOfOrigin: Joi.any().optional(),
 }).strict();
@@ -337,6 +346,17 @@ const applicantRetrievalValidationSchema = Joi.object({
       "Enter a valid phone number (11 digits starting with 0)",
     "any.required": "Phone number is required",
   }),
+  email: Joi.string()
+    .email()
+    .lowercase()
+    .trim()
+    .optional()
+    .allow("", null)
+    .messages({
+      "string.base": "Email must be a string",
+      "string.email": "Enter a valid email address",
+    }),
+  isNotNew: Joi.boolean().optional().allow("", null),
 });
 
 const applicantNinVerificationSchema = Joi.object({
@@ -360,7 +380,6 @@ const applicantNinVerificationSchema = Joi.object({
     "any.required": "Access Code is required",
   }),
 });
-
 
 const saveApplicantNinDataValidationSchema = Joi.object({
   firstname: Joi.string().trim().required().messages({
@@ -395,10 +414,10 @@ const saveApplicantNinDataValidationSchema = Joi.object({
       "any.required": "Birthdate is required",
     }),
 
-  photo: Joi.string().uri().allow("", null).optional().messages({
-    "string.base": "Photo must be a string",
-    "string.uri": "Photo must be a valid URL",
-  }),
+  // photo: Joi.string().uri().allow("", null).optional().messages({
+  //   "string.base": "Photo must be a string",
+  //   "string.uri": "Photo must be a valid URL",
+  // }),
 
   nin: Joi.string()
     .pattern(/^\d{11}$/)
@@ -415,7 +434,72 @@ const saveApplicantNinDataValidationSchema = Joi.object({
     "string.empty": "Access code is required",
     "any.required": "Access code is required",
   }),
+  email: Joi.string().email().lowercase().trim().required().messages({
+    "string.base": "Email must be a string",
+    "string.empty": "Enter a valid email address",
+    "any.required": "Email is required",
+  }),
 });
+
+const complaintValidationSchema = Joi.object({
+  nin: Joi.string()
+    .pattern(/^\d{11}$/)
+    .required()
+    .messages({
+      "string.base": "NIN must be a string",
+      "string.empty": "NIN is required",
+      "string.pattern.base": "NIN must be exactly 11 digits",
+      "any.required": "NIN is required",
+    }),
+
+  fullName: Joi.string()
+    .trim()
+    .min(5)
+    .max(150)
+    .pattern(fullNameRegex)
+    .required()
+    .messages({
+      "string.base": "Full name must be a string",
+      "string.empty": "Full name is required",
+      "string.min": "Full name must be at least 5 characters",
+      "string.max": "Full name must not exceed 150 characters",
+      "string.pattern.base": "Please enter at least first name and surname",
+      "any.required": "Full name is required",
+    }),
+
+  phoneNumber: Joi.string().pattern(phoneRegex).required().messages({
+    "string.base": "Phone number must be a string",
+    "string.empty": "Phone number is required",
+    "string.pattern.base":
+      "Enter a valid phone number (11 digits starting with 0)",
+    "any.required": "Phone number is required",
+  }),
+
+  errorEncountered: Joi.string()
+    .trim()
+    .max(255)
+    .optional()
+    .allow("", null)
+    .messages({
+      "string.base": "Error encountered must be a string",
+      "string.max": "Error encountered must not exceed 255 characters",
+    }),
+
+  description: Joi.string().trim().min(10).max(5000).required().messages({
+    "string.base": "Description must be a string",
+    "string.empty": "Description is required",
+    "string.min": "Description must be at least 10 characters",
+    "string.max": "Description must not exceed 5000 characters",
+    "any.required": "Description is required",
+  }),
+
+  currentPage: Joi.string().uri().required().messages({
+    "string.base": "Current page must be a string",
+    "string.empty": "Current page is required",
+    "string.uri": "Current page must be a valid URL",
+    "any.required": "Current page is required",
+  }),
+}).strict();
 
 export {
   inputValidator,
@@ -425,5 +509,6 @@ export {
   applicantValidationSchema,
   applicantRetrievalValidationSchema,
   applicantNinVerificationSchema,
-  saveApplicantNinDataValidationSchema
+  saveApplicantNinDataValidationSchema,
+  complaintValidationSchema,
 };

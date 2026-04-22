@@ -4,6 +4,7 @@ import { database } from "../../configurations/database";
 export interface TransactionAttributes {
   id?: string;
   phoneNumber: string;
+  email:string;
   reference: string;
   amount: number;
   status?: "pending" | "success" | "failed";
@@ -22,6 +23,11 @@ Transactions.init(
     },
 
     phoneNumber: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+
+    email: {
       type: DataTypes.STRING,
       allowNull: false,
     },

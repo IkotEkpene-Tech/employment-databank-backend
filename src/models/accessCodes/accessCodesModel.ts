@@ -24,6 +24,12 @@ AccessCodes.init(
       unique: true,
     },
 
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+    },
+
     usageCount: {
       type: DataTypes.INTEGER,
       allowNull: false,

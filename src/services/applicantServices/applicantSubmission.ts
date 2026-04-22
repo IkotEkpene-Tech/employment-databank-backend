@@ -8,6 +8,9 @@ import { formatNigerianPhone, toTitleCase } from "../../utilities/utils";
 import Ward from "../../models/wards/wardModel";
 import { generateApplicantId } from "../../helpers/shortCodeHelpers";
 import { hashForLookup } from "../../utilities/encryption/encryption";
+import AccessCodes from "../../models/accessCodes/accessCodesModel";
+import { registrationCompletedTemplate } from "../../emailTemplates/registrationCompleted";
+import { queueEmail } from "../../utilities/emailServices/emailQueue";
 
 const submitApplicationService = errorUtilities.withServiceErrorHandling(
   async (
@@ -37,35 +40,47 @@ const submitApplicationService = errorUtilities.withServiceErrorHandling(
       villageHeadPhone,
       discipline,
       otherDiscipline,
+      accessCode,
     } = applicantPayload;
 
     const ninHash = hashForLookup(nin);
     const vinHash = hashForLookup(vin);
 
     // ── Duplicate checks + ward lookup ──────────────────────────────────────
-    const [existingPhone, existingWard, existingNin, existingVin]: any =
-      await Promise.all([
-        Applicants.findOne({
-          where: { phoneNumber: formatNigerianPhone(phoneNumber) },
-          attributes: ["id", "phoneNumber"],
-        }),
-        Ward.findOne({ where: { id: ward }, attributes: ["id", "name"] }),
-        Applicants.findOne({
-          where: { ninHash },
-          attributes: ["id", "ninHash"],
-        }),
-        Applicants.findOne({
-          where: { vinHash },
-          attributes: ["id", "vinHash"],
-        }),
-      ]);
+    const [
+      existingPhone,
+      existingWard,
+      existingNin,
+      existingVin,
+      existingApplicantCode,
+    ]: any = await Promise.all([
+      Applicants.findOne({
+        where: { phoneNumber: formatNigerianPhone(phoneNumber) },
+        attributes: ["id", "phoneNumber"],
+      }),
+      Ward.findOne({ where: { id: ward }, attributes: ["id", "name"] }),
+      Applicants.findOne({
+        where: { ninHash },
+        attributes: ["id", "ninHash"],
+      }),
+      Applicants.findOne({
+        where: { vinHash },
+        attributes: ["id", "vinHash"],
+      }),
+      AccessCodes.findOne({
+        where: {
+          phoneNumber: formatNigerianPhone(phoneNumber),
+          code: accessCode,
+        },
+      }),
+    ]);
 
-    if (existingNin) {
-      throw errorUtilities.createError(
-        "NIN already registered",
-        StatusCodes.BAD_REQUEST,
-      );
-    }
+    // if (existingNin) {
+    //   throw errorUtilities.createError(
+    //     "NIN already registered",
+    //     StatusCodes.BAD_REQUEST,
+    //   );
+    // }
 
     if (existingVin) {
       throw errorUtilities.createError(
@@ -74,12 +89,12 @@ const submitApplicationService = errorUtilities.withServiceErrorHandling(
       );
     }
 
-    if (existingPhone) {
-      throw errorUtilities.createError(
-        "Phone Number already registered",
-        StatusCodes.BAD_REQUEST,
-      );
-    }
+    // if (existingPhone) {
+    //   throw errorUtilities.createError(
+    //     "Phone Number already registered",
+    //     StatusCodes.BAD_REQUEST,
+    //   );
+    // }
 
     if (email && email.trim() !== "") {
       const existingEmail = await Applicants.findOne({
@@ -129,11 +144,21 @@ const submitApplicationService = errorUtilities.withServiceErrorHandling(
       );
     }
 
+    if (!existingApplicantCode) {
+      throw errorUtilities.createError(
+        "Check Access Code and Try Again. If error persists, contact admin",
+        StatusCodes.NOT_FOUND,
+      );
+    }
+
     // ── Create applicant record ──────────────────────────────────────────────
     const applicantId = await generateApplicantId(existingWard.name, village);
 
-    const createApplicantPayload = (
-      await Applicants.create({
+    const [day, month, year] = dateOfBirth.split("-");
+    const formattedDate: any = `${year}-${month}-${day}`;
+
+    const createApplicantPayload = await Applicants.update(
+      {
         id: v4(),
         firstName: toTitleCase(firstName),
         surname: toTitleCase(surname),
@@ -154,15 +179,39 @@ const submitApplicationService = errorUtilities.withServiceErrorHandling(
         applicantId,
         otherSkill: toTitleCase(otherSkill) || null,
         gender,
-        dateOfBirth,
+        dateOfBirth: formattedDate,
         skillAcquisition: skillAcquisition || null,
         otherSkillAcquisition: toTitleCase(otherSkillAcquisition) || null,
         villageHeadName: toTitleCase(villageHeadName),
         villageHeadPhone: formatNigerianPhone(villageHeadPhone),
         certificateOfOrigin: certificateOfOriginUrl,
         certificateUrl: certificateUrl || null,
-      })
-    ).get({ plain: true });
+      },
+      {
+        where: { ninHash, phoneNumber: formatNigerianPhone(phoneNumber) },
+      },
+    );
+
+    const template = registrationCompletedTemplate(
+      applicantId,
+      `${firstName} ${surname}`,
+    );
+
+    queueEmail({
+      to: email,
+      subject: template.subject,
+      htmlbody: template.htmlBody,
+    });
+
+    await AccessCodes.update(
+      { isConsumed: true },
+      {
+        where: {
+          phoneNumber: formatNigerianPhone(phoneNumber),
+          code: accessCode,
+        },
+      },
+    );
 
     return responseUtilities.handleServicesResponse(
       StatusCodes.OK,

@@ -17,6 +17,7 @@ const saveApplicantNinDataService = errorUtilities.withServiceErrorHandling(
     photo: string,
     nin: string,
     accessCode: string,
+    email:string
   ) => {
     const projection = [
       "id",
@@ -26,6 +27,7 @@ const saveApplicantNinDataService = errorUtilities.withServiceErrorHandling(
       "expiresAt",
       "maxUsage",
       "isConsumed",
+      "email"
     ];
 
     const ninHash = hashForLookup(nin);
@@ -39,6 +41,7 @@ const saveApplicantNinDataService = errorUtilities.withServiceErrorHandling(
           code: accessCode,
         },
         attributes: projection,
+        raw:true
       }),
       Applicants.findOne({
         where: { ninHash },
@@ -52,6 +55,8 @@ const saveApplicantNinDataService = errorUtilities.withServiceErrorHandling(
           "phoneNumber",
           "photo",
           "nin",
+          "accessCode",
+          "email",
         ],
       }),
     ]);
@@ -86,23 +91,29 @@ const saveApplicantNinDataService = errorUtilities.withServiceErrorHandling(
 
     if (checkApplicant) {
       applicantData = checkApplicant;
+      delete applicantData.dataValues.ninHash;
+      delete applicantData.dataValues.nin;
       return responseUtilities.handleServicesResponse(
         StatusCodes.OK,
         "Nin already exists. Returning existing applicant data.",
         applicantData,
       );
     }
+    const [day, month, year] = birthdate.split("-");
+    const formattedDate:any = `${year}-${month}-${day}`;
 
     applicantData = await Applicants.create({
       id: v4(),
       ninHash,
-      dateOfBirth: birthdate,
+      dateOfBirth: formattedDate,
       surname,
       firstName: firstname,
       otherName: middlename ?? null,
       phoneNumber: formatNigerianPhone(phoneNumber),
       photo,
       nin,
+      accessCode,
+      email: email ?? existingApplicantCode.email
     });
 
     return responseUtilities.handleServicesResponse(

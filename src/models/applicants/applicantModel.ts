@@ -30,6 +30,11 @@ Applicants.init(
       },
     },
 
+    photo: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+
     vin: {
       type: DataTypes.TEXT,
       allowNull: true,
@@ -152,6 +157,11 @@ Applicants.init(
     },
 
     otherSkill: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
+    accessCode: {
       type: DataTypes.STRING,
       allowNull: true,
     },

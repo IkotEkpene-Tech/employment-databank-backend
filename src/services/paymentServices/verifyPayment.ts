@@ -1,4 +1,4 @@
-// services/paymentServices/verifyPayment.ts
+import { Request } from "express";
 import axios from "axios";
 import crypto from "crypto";
 import { errorUtilities } from "../../utilities";
@@ -9,14 +9,16 @@ import configurations from "../../configurations";
 import { formatNigerianPhone } from "../../utilities/utils";
 import Transactions from "../../models/transactions";
 import randomstring from "randomstring";
+import { paymentSuccessfulTemplate } from "../../emailTemplates/paymentSuccessful";
+import { queueEmail } from "../../utilities/emailServices/emailQueue";
+import { accessCodeGeneratedTemplate } from "../../emailTemplates/accessCodeGenerated";
 
 const generateCode = (): string => {
   return randomstring.generate({ length: 12, charset: "numeric" });
 };
 
 const verifyPaymentService = errorUtilities.withServiceErrorHandling(
-  async (reference: string) => {
-    // 1. Verify with Paystack
+  async (reference: string, request: Request) => {
     const response = await axios.get(
       `https://api.paystack.co/transaction/verify/${reference}`,
       {
@@ -36,7 +38,7 @@ const verifyPaymentService = errorUtilities.withServiceErrorHandling(
       );
     }
 
-    const { phoneNumber } = metadata;
+    const { phoneNumber, email } = metadata;
 
     await Transactions.update(
       { status: "success" },
@@ -55,7 +57,26 @@ const verifyPaymentService = errorUtilities.withServiceErrorHandling(
     const accessCode: any = await AccessCodes.create({
       code: generateCode(),
       phoneNumber: formatNigerianPhone(phoneNumber),
+      email,
       expiresAt,
+    });
+
+    const paymentEmailTemplate = paymentSuccessfulTemplate(reference);
+
+    const accessCodeEmailTemplate = accessCodeGeneratedTemplate(
+      accessCode.code,
+    );
+
+    queueEmail({
+      to: email,
+      subject: paymentEmailTemplate.subject,
+      htmlbody: paymentEmailTemplate.htmlBody,
+    });
+
+    queueEmail({
+      to: email,
+      subject: accessCodeEmailTemplate.subject,
+      htmlbody: accessCodeEmailTemplate.htmlBody,
     });
 
     return responseUtilities.handleServicesResponse(
