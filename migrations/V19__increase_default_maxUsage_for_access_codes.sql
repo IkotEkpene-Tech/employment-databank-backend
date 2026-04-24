@@ -1,0 +1,2 @@
+ALTER TABLE access_codes 
+ALTER COLUMN "maxUsage" SET DEFAULT 6;

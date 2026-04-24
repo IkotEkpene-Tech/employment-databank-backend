@@ -12,10 +12,15 @@ const resend = new Resend(configurations.RESEND_API_KEY!);
 // }
 
 export async function sendEmail(payload: any): Promise<void> {
-  await resend.emails.send({
+  // console.log('clear', payload)
+ const { data, error } = await resend.emails.send({
     from: configurations.MAIL_FROM_ADDRESS,
     to: payload.to,
     subject: payload.subject,
-    html: payload.htmlBody,
+    html: payload.htmlbody || payload.htmlBody,
   });
+  // console.log('t', data, error)
+  if(error){
+    console.log('Email Error====>', error)
+  }
 }

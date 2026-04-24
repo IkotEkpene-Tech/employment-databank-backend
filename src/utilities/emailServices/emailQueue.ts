@@ -25,13 +25,14 @@ export const emailQueue = new Bull<any>("email-queue", {
 
 // ── Worker: process jobs ─────────────────────────────────────────────────────
 emailQueue.process(async (job) => {
-  const { to, subject, htmlBody } = job.data;
+  const { to, subject, htmlbody, htmlBody } = job.data;
+  const html = htmlbody || htmlBody;
 
   console.log(
-    `[EmailQueue] Sending "${subject}" to ${to.email} (attempt ${job.attemptsMade + 1})`,
+    `[EmailQueue] Sending "${subject}" to ${to} (attempt ${job.attemptsMade + 1})`,
   );
 
-  await sendEmail({ to, subject, htmlBody });
+  await sendEmail({ to, subject, htmlBody:html });
 
   console.log(`[EmailQueue] ✓ Sent "${subject}" to ${to}`);
 });

@@ -39,7 +39,7 @@ AccessCodes.init(
     maxUsage: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      defaultValue: 5,
+      defaultValue: 6,
     },
 
     expiresAt: {

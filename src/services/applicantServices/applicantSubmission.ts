@@ -48,30 +48,35 @@ const submitApplicationService = errorUtilities.withServiceErrorHandling(
 
     // ── Duplicate checks + ward lookup ──────────────────────────────────────
     const [
-      existingPhone,
+      // existingPhone,
       existingWard,
-      existingNin,
+      // existingNin,
       existingVin,
-      existingApplicantCode,
+      // existingApplicantCode,
+      existingEmail,
     ]: any = await Promise.all([
-      Applicants.findOne({
-        where: { phoneNumber: formatNigerianPhone(phoneNumber) },
-        attributes: ["id", "phoneNumber"],
-      }),
+      // Applicants.findOne({
+      //   where: { phoneNumber: formatNigerianPhone(phoneNumber) },
+      //   attributes: ["id", "phoneNumber"],
+      // }),
       Ward.findOne({ where: { id: ward }, attributes: ["id", "name"] }),
-      Applicants.findOne({
-        where: { ninHash },
-        attributes: ["id", "ninHash"],
-      }),
+      // Applicants.findOne({
+      //   where: { ninHash },
+      //   attributes: ["id", "ninHash"],
+      // }),
       Applicants.findOne({
         where: { vinHash },
         attributes: ["id", "vinHash"],
       }),
-      AccessCodes.findOne({
-        where: {
-          phoneNumber: formatNigerianPhone(phoneNumber),
-          code: accessCode,
-        },
+      // AccessCodes.findOne({
+      //   where: {
+      //     phoneNumber: formatNigerianPhone(phoneNumber),
+      //     code: accessCode,
+      //   },
+      // }),
+      Applicants.findOne({
+        where: { email: email.trim().toLowerCase() },
+        attributes: ["id", "ninHash", "email"],
       }),
     ]);
 
@@ -96,14 +101,16 @@ const submitApplicationService = errorUtilities.withServiceErrorHandling(
     //   );
     // }
 
+    console.log({
+      existingEmail,
+      ninHash,
+      existingHash: existingEmail.ninHash,
+    });
+
     if (email && email.trim() !== "") {
-      const existingEmail = await Applicants.findOne({
-        where: { email: email.trim().toLowerCase() },
-        attributes: ["id", "email"],
-      });
-      if (existingEmail) {
+      if (existingEmail && existingEmail.ninHash !== ninHash) {
         throw errorUtilities.createError(
-          "Email already registered",
+          "Email already registered to another applicant",
           StatusCodes.BAD_REQUEST,
         );
       }
@@ -144,12 +151,12 @@ const submitApplicationService = errorUtilities.withServiceErrorHandling(
       );
     }
 
-    if (!existingApplicantCode) {
-      throw errorUtilities.createError(
-        "Check Access Code and Try Again. If error persists, contact admin",
-        StatusCodes.NOT_FOUND,
-      );
-    }
+    // if (!existingApplicantCode) {
+    //   throw errorUtilities.createError(
+    //     "Check Access Code and Try Again. If error persists, contact admin",
+    //     StatusCodes.NOT_FOUND,
+    //   );
+    // }
 
     // ── Create applicant record ──────────────────────────────────────────────
     const applicantId = await generateApplicantId(existingWard.name, village);
@@ -192,6 +199,16 @@ const submitApplicationService = errorUtilities.withServiceErrorHandling(
       },
     );
 
+    await AccessCodes.update(
+      { isConsumed: true },
+      {
+        where: {
+          phoneNumber: formatNigerianPhone(phoneNumber),
+          code: accessCode,
+        },
+      },
+    );
+
     const template = registrationCompletedTemplate(
       applicantId,
       `${firstName} ${surname}`,
@@ -202,16 +219,6 @@ const submitApplicationService = errorUtilities.withServiceErrorHandling(
       subject: template.subject,
       htmlbody: template.htmlBody,
     });
-
-    await AccessCodes.update(
-      { isConsumed: true },
-      {
-        where: {
-          phoneNumber: formatNigerianPhone(phoneNumber),
-          code: accessCode,
-        },
-      },
-    );
 
     return responseUtilities.handleServicesResponse(
       StatusCodes.OK,
