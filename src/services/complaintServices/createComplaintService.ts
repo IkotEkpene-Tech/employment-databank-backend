@@ -4,6 +4,9 @@ import { errorUtilities } from "../../utilities";
 import responseUtilities from "../../utilities/responseHandlers/response.utilities";
 import { formatNigerianPhone } from "../../utilities/utils";
 import Complaint from "../../models/complaint/complaintModel";
+import { complaintReceivedTemplate } from "../../emailTemplates/complainReceivedTemplate";
+import { queueEmail } from "../../utilities/emailServices/emailQueue";
+import configurations from "../../configurations";
 
 const createComplaintService = errorUtilities.withServiceErrorHandling(
   async (
@@ -23,6 +26,21 @@ const createComplaintService = errorUtilities.withServiceErrorHandling(
       description,
       currentPage,
       status: "pending",
+    });
+
+     const template = complaintReceivedTemplate(
+      fullName,
+      formatNigerianPhone(phoneNumber),
+      nin,
+      description,
+      currentPage,
+      errorEncountered,
+    );
+
+    queueEmail({
+      to: configurations.ADMIN_EMAIL,
+      subject: template.subject,
+      htmlBody: template.htmlBody,
     });
 
     return responseUtilities.handleServicesResponse(

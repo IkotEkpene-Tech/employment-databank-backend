@@ -11,7 +11,7 @@ const checkApplicantService = errorUtilities.withServiceErrorHandling(
     const fetchFull = isFetchFull === "true";
 
     if (fetchFull) {
-      projection.push("code", "phoneNumber", "usageCount", "expiresAt");
+      projection.push("code", "phoneNumber", "usageCount", "expiresAt", "maxUsage");
     }
     const exisitingApplicant = await AccessCodes.findOne({
       where: { phoneNumber: formatNigerianPhone(phoneNumber) },

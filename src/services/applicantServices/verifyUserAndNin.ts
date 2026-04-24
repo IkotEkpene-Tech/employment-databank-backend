@@ -30,7 +30,7 @@ const verifyApplicantAndNinService = errorUtilities.withServiceErrorHandling(
           code: accessCode.trim(),
         },
         attributes: projection,
-        raw:true,
+        raw: true,
       }),
       Applicants.findOne({
         where: { phoneNumber: formatNigerianPhone(phoneNumber.trim()) },
@@ -53,7 +53,7 @@ const verifyApplicantAndNinService = errorUtilities.withServiceErrorHandling(
 
     if (!existingApplicantCode) {
       throw errorUtilities.createError(
-        "Check Access Code and Try Again. If error persists, please make a complaint to admin",
+        "This Access Code seems invalid, please check Access Code and Try Again. If error persists, please make a complaint to admin",
         StatusCodes.NOT_FOUND,
       );
     }
@@ -93,6 +93,8 @@ const verifyApplicantAndNinService = errorUtilities.withServiceErrorHandling(
         gender: newApplicantData.gender,
         birthdate: newApplicantData.dateOfBirth,
         email: newApplicantData.email,
+        usageCount: 0,
+        maxUsage: 0,
         // photo: newApplicantData.photo,
         nin,
       };
@@ -103,6 +105,16 @@ const verifyApplicantAndNinService = errorUtilities.withServiceErrorHandling(
           code: accessCode.trim(),
         },
       });
+      const fetchAccessCode: any = await AccessCodes.findOne({
+        where: {
+          phoneNumber: formatNigerianPhone(phoneNumber.trim()),
+          code: accessCode.trim(),
+        },
+        attributes: ["id", "usageCount", "maxUsage"],
+        raw: true,
+      });
+      applicantData.usageCount = fetchAccessCode.usageCount;
+      applicantData.maxUsage = fetchAccessCode.maxUsage;
       return responseUtilities.handleServicesResponse(
         StatusCodes.OK,
         "Applicant Found",
@@ -121,6 +133,14 @@ const verifyApplicantAndNinService = errorUtilities.withServiceErrorHandling(
     //   );
     // }
 
+    const fetchAccessCode: any = await AccessCodes.findOne({
+      where: {
+        phoneNumber: formatNigerianPhone(phoneNumber.trim()),
+        code: accessCode.trim(),
+      },
+      attributes: ["id", "usageCount", "maxUsage"],
+      raw: true,
+    });
     const returnPayload = {
       firstname: ninData?.firstname,
       surname: ninData?.lastname,
@@ -128,7 +148,9 @@ const verifyApplicantAndNinService = errorUtilities.withServiceErrorHandling(
       phone: ninData?.phone,
       gender: ninData?.gender,
       birthdate: ninData?.birthdate,
-      email:existingApplicantCode.email,
+      email: existingApplicantCode.email,
+      usageCount: fetchAccessCode.usageCount,
+      maxUsage: fetchAccessCode.maxUsage,
       // photo: ninData?.photo,
       nin,
     };

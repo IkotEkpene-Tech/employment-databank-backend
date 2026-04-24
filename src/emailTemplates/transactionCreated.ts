@@ -11,7 +11,7 @@ export const transactionCreatedTemplate = (transactionReference: string) => ({
     </div>
 
     <div style="padding:32px 24px;">
-      <p style="font-size:16px;color:#333333;">Hello {{fullName}},</p>
+      <p style="font-size:16px;color:#333333;">Hello User,</p>
 
       <p style="font-size:15px;line-height:1.7;color:#555555;">
         A transaction has been created for your registration.
