@@ -1,14 +1,18 @@
 import express from "express";
-import wardsAndVillageRouter from "./wardAndVillages";
-import applicantsRouter from "./applicantRoutes";
-import paymentRouter from "./paymentRoutes";
-import complaintRouter from "./complaintRoutes";
+import authRouter from "../auth/auth.routes";
+import paymentsRouter from "../payments/payments.routes";
+import employmentAccessRouter from "../employmentAccess/employment-access.routes";
+import applicantsRouter from "../applicants/applicants.routes";
+import wardsAndVillagesRouter from "../wardsAndVillages/wards-and-villages.routes";
+import complaintsRouter from "../complaints/complaints.routes";
 
 const router = express.Router();
 
-router.use("/wards-and-villages", wardsAndVillageRouter);
+router.use("/auth", authRouter);
+router.use("/payments", paymentsRouter);
+router.use("/employment-access", employmentAccessRouter);
 router.use("/applicants", applicantsRouter);
-router.use("/payments", paymentRouter);
-router.use("/complaints", complaintRouter);
+router.use("/wards-and-villages", wardsAndVillagesRouter);
+router.use("/complaints", complaintsRouter);
 
 export default router;
