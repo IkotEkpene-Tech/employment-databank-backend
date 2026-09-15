@@ -52,7 +52,7 @@ const complaintValidationSchema = Joi.object({
   }),
 
   submittedAt: Joi.date().iso().optional(),
-}).strict();
+});
 
 router.post(
   "/submit",

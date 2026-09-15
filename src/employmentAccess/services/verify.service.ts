@@ -5,7 +5,6 @@ import { StatusCodes } from "../../configurations/statusCodes";
 import { hashForLookup } from "../../configurations/encryption";
 import { compareSecret } from "../../auth/auth.helpers";
 import verifyNIN from "../../configurations/nin-provider";
-import bcrypt from "bcryptjs";
 
 const CONFIRMED_STATUSES = [
   ApplicationStatus.NinVerified,
@@ -22,8 +21,6 @@ export const assertLiveAccessCode = async (
 ): Promise<User> => {
   const user = await User.findByPk(userId);
 
-  console.log("assertLiveAccessCode1", { userId, nin, accessCode, user });
-
   const invalidError = errorUtilities.createError(
     "Invalid NIN or access code",
     StatusCodes.UNAUTHORIZED,
@@ -34,12 +31,6 @@ export const assertLiveAccessCode = async (
   const ninHash = hashForLookup(nin);
   const accessCodeNinHash = user.get("accessCodeNinHash") as string | null;
   const accessCodeHash = user.get("accessCodeHash") as string | null;
-
-  console.log("assertLiveAccessCode21", {
-    ninHash,
-    accessCodeNinHash,
-    accessCodeHash,
-  });
 
   if (!accessCodeHash || !accessCodeNinHash || accessCodeNinHash !== ninHash) {
     throw invalidError;
@@ -52,15 +43,9 @@ export const assertLiveAccessCode = async (
       StatusCodes.BAD_REQUEST,
     );
   }
-
-  console.log("assertLiveAccessCode27", await bcrypt.compare(accessCode, accessCodeHash));
-
   if (!(await compareSecret(accessCode, accessCodeHash))) {
     throw invalidError;
   }
-
-   console.log("assertLiveAccessCode2745", {
-    user});
   return user;
 };
 
