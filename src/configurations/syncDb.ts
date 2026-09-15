@@ -1,8 +1,11 @@
 import { database } from "./database";
-import "../models/applicants/applicantModel";
-import "../models/villages/villageModel";
-import "../models/wards/wardModel";
-import "../models/idCounter/idCounterModel";
+import "../auth/User";
+import "../auth/RegistrationDraft";
+import "../payments/Transaction";
+import "../wardsAndVillages/Village";
+import "../wardsAndVillages/Ward";
+import "../applicants/ApplicantIdCounter";
+import "../complaints/Complaint";
 
 export async function syncDatabases() {
   try {
