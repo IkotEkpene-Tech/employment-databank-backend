@@ -1,10 +1,10 @@
-import applyAssociations from "./models/associations";
+import applyWardVillageAssociations from "./wardsAndVillages/associations";
 import express, { NextFunction, Request, Response, Application } from "express";
 import helmet from "helmet";
 import cors from "cors";
 import logger from "morgan";
 import cookieParser from "cookie-parser";
-import { errorUtilities } from "./utilities";
+import errorUtilities from "./configurations/error-handler";
 import configurations from "./configurations";
 import { syncDatabases } from "./configurations/syncDb";
 import routers from "./routes";
@@ -16,7 +16,7 @@ app.disable("x-powered-by");
 app.set("trust proxy", 1);
 
 // Model associations
-applyAssociations();
+applyWardVillageAssociations();
 
 app.use(helmet());
 
