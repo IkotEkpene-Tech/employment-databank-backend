@@ -2,6 +2,7 @@ import { Op } from "sequelize";
 import { User, ApplicationStatus } from "../../auth/User";
 import { RegistrationDraft } from "../../auth/RegistrationDraft";
 import { Ward } from "../../wardsAndVillages/Ward";
+import { Village } from "../../wardsAndVillages/Village";
 import errorUtilities from "../../configurations/error-handler";
 import responseUtilities from "../../configurations/response";
 import { StatusCodes } from "../../configurations/statusCodes";
@@ -76,6 +77,25 @@ const submitApplicationService = errorUtilities.withServiceErrorHandling(
       );
     }
 
+    // Village is submitted as free text, not an id (unlike ward) — resolve
+    // it case-insensitively against the canonical record so "Ikot Obong
+    // Edong" and "IKOT OBONG EDONG" don't end up stored as two different
+    // strings, and so what we store always matches the seeded village name.
+    const existingVillage = await Village.findOne({
+      where: {
+        wardId: existingWard.get("id") as string,
+        name: { [Op.iLike]: village.trim() },
+      },
+      attributes: ["id", "name"],
+    });
+
+    if (!existingVillage) {
+      throw errorUtilities.createError(
+        "Village not found, please refresh page and try again",
+        StatusCodes.NOT_FOUND,
+      );
+    }
+
     if (!certificateOfOriginFile) {
       throw errorUtilities.createError(
         "Certificate of Origin is required",
@@ -102,25 +122,28 @@ const submitApplicationService = errorUtilities.withServiceErrorHandling(
       );
     }
 
-    const applicantId = await generateApplicantId(existingWard.get("name") as string, village);
+    const applicantId = await generateApplicantId(
+      existingWard.get("name") as string,
+      existingVillage.get("name") as string,
+    );
 
     user.set({
       firstName: toTitleCase(firstName) ?? user.get("firstName"),
       surname: toTitleCase(surname) ?? user.get("surname"),
-      otherName: otherName || null,
-      gender: gender ?? user.get("gender"),
+      otherName: toTitleCase(otherName),
+      gender: gender ? String(gender).trim().toLowerCase() : user.get("gender"),
       ward: existingWard.get("name"),
-      village,
+      village: existingVillage.get("name"),
       vin: vin.trim(),
       vinHash,
       hasEducation,
-      discipline: discipline || null,
+      discipline: toTitleCase(discipline),
       otherDiscipline: toTitleCase(otherDiscipline),
       highestQualification: highestQualification || null,
-      vocationalSkill,
+      vocationalSkill: toTitleCase(vocationalSkill),
       applicantId,
       otherSkill: toTitleCase(otherSkill),
-      skillAcquisition: skillAcquisition || null,
+      skillAcquisition: toTitleCase(skillAcquisition),
       otherSkillAcquisition: toTitleCase(otherSkillAcquisition),
       villageHeadName: toTitleCase(villageHeadName),
       villageHeadPhone: formatNigerianPhone(villageHeadPhone),

@@ -3,6 +3,7 @@ import errorUtilities from "../../configurations/error-handler";
 import responseUtilities from "../../configurations/response";
 import { StatusCodes } from "../../configurations/statusCodes";
 import { hashForLookup } from "../../configurations/encryption";
+import { toTitleCase } from "../../configurations/utils";
 import { serializeUser } from "../../auth/auth.helpers";
 import verifyNIN from "../../configurations/nin-provider";
 import {
@@ -37,10 +38,25 @@ const confirmEmploymentAccessService = errorUtilities.withServiceErrorHandling(
 
     user.set("nin", nin.trim());
     user.set("ninHash", ninHash);
-    user.set("firstName", ninData.firstname ?? user.get("firstName"));
-    user.set("surname", ninData.lastname ?? user.get("surname"));
-    user.set("otherName", ninData.middlename ?? user.get("otherName"));
-    user.set("gender", ninData.gender ?? user.get("gender"));
+    // NIN providers commonly return names in inconsistent casing (NIMC data
+    // in particular tends to give lastname in ALL CAPS) — normalize to Title
+    // Case on the way in so every applicant's stored data looks the same,
+    // regardless of what the provider handed back.
+    user.set(
+      "firstName",
+      toTitleCase(ninData.firstname) ?? user.get("firstName"),
+    );
+    user.set("surname", toTitleCase(ninData.lastname) ?? user.get("surname"));
+    user.set(
+      "otherName",
+      toTitleCase(ninData.middlename) ?? user.get("otherName"),
+    );
+    user.set(
+      "gender",
+      ninData.gender
+        ? ninData.gender.trim().toLowerCase()
+        : (user.get("gender") as string | null),
+    );
     if (ninData.birthdate) {
       const parsed = moment(ninData.birthdate, "DD-MM-YYYY", true);
       if (parsed.isValid()) {
