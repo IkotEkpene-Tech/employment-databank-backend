@@ -4,6 +4,7 @@ import responseUtilities from "../../configurations/response";
 import { StatusCodes } from "../../configurations/statusCodes";
 import { hashForLookup } from "../../configurations/encryption";
 import { compareSecret } from "../../auth/auth.helpers";
+import { toTitleCase } from "../../configurations/utils";
 import verifyNIN from "../../configurations/nin-provider";
 
 const CONFIRMED_STATUSES = [
@@ -79,15 +80,17 @@ const verifyEmploymentAccessService = errorUtilities.withServiceErrorHandling(
 
     const ninData = await verifyNIN(nin.trim());
 
+    // Match the casing confirm.service.ts will actually save, so what the
+    // user is asked to approve here is exactly what ends up on their profile.
     return responseUtilities.handleServicesResponse(
       StatusCodes.OK,
       "NIN verified",
       {
-        firstName: ninData.firstname,
-        surname: ninData.lastname,
-        otherName: ninData.middlename ?? undefined,
+        firstName: toTitleCase(ninData.firstname) ?? undefined,
+        surname: toTitleCase(ninData.lastname) ?? undefined,
+        otherName: toTitleCase(ninData.middlename) ?? undefined,
         dob: ninData.birthdate,
-        gender: ninData.gender,
+        gender: ninData.gender ? ninData.gender.trim().toLowerCase() : undefined,
         alreadyConfirmed: false,
       },
     );

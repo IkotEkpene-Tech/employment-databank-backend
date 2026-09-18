@@ -12,10 +12,15 @@ import confirm from "./controllers/confirm";
 
 const router = express.Router();
 
-const ninSchema = Joi.string().trim().length(11).pattern(/^\d{11}$/).required().messages({
-  "string.length": "NIN must be exactly 11 digits",
-  "string.pattern.base": "NIN must be exactly 11 digits",
-});
+const ninSchema = Joi.string()
+  .trim()
+  .length(11)
+  .pattern(/^\d{11}$/)
+  .required()
+  .messages({
+    "string.length": "NIN must be exactly 11 digits",
+    "string.pattern.base": "NIN must be exactly 11 digits",
+  });
 
 const accessCodeSchema = Joi.string().trim().length(8).required().messages({
   "string.length": "Access code must be exactly 8 characters",
@@ -23,7 +28,10 @@ const accessCodeSchema = Joi.string().trim().length(8).required().messages({
 
 const initiatePaymentSchema = Joi.object({ nin: ninSchema });
 
-const verifySchema = Joi.object({ nin: ninSchema, accessCode: accessCodeSchema });
+const verifySchema = Joi.object({
+  nin: ninSchema,
+  accessCode: accessCodeSchema,
+});
 
 // Paystack's redirect has no Authorization header — this must stay public.
 router.get("/payment/callback", callback);
