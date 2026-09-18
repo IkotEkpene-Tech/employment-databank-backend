@@ -10,7 +10,7 @@ import { hashForLookup } from "../../configurations/encryption";
 import { queueEmail } from "../../configurations/email-queue";
 import { transactionCreatedTemplate } from "../emailTemplates/transactionCreated";
 
-const AMOUNT_KOBO = 50000; // ₦500
+const AMOUNT_KOBO = 10000; // ₦500
 
 const initiatePaymentService = errorUtilities.withServiceErrorHandling(
   async (userId: string, nin: string) => {
