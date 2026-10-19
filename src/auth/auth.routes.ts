@@ -23,8 +23,8 @@ const otpSchema = Joi.string().trim().length(6).pattern(/^\d{6}$/).required().me
   "string.length": "Code must be exactly 6 digits",
   "string.pattern.base": "Code must be exactly 6 digits",
 });
-const passwordSchema = Joi.string().min(8).max(128).required().messages({
-  "string.min": "Password must be at least 8 characters",
+const passwordSchema = Joi.string().min(6).max(128).required().messages({
+  "string.min": "Password must be at least 6 characters",
   "any.required": "Password is required",
 });
 
