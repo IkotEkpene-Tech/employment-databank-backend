@@ -1,4 +1,5 @@
 import { User } from "../../auth/User";
+import { trialsRemaining } from "./verify.service";
 import errorUtilities from "../../configurations/error-handler";
 import responseUtilities from "../../configurations/response";
 import { StatusCodes } from "../../configurations/statusCodes";
@@ -27,6 +28,8 @@ const employmentAccessStatusService = errorUtilities.withServiceErrorHandling(
           ? new Date(expiresAt).toISOString()
           : undefined,
         accessCodeExpired,
+        trialsRemaining: accessCodeHash ? trialsRemaining(user) : 0,
+        maxTrials: user.get("accessCodeMaxTrials"),
       },
     );
   },

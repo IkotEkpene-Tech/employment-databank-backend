@@ -1,5 +1,5 @@
 import { Transaction } from "../../payments/Transaction";
-import { User, ApplicationStatus } from "../../auth/User";
+import { User } from "../../auth/User";
 import errorUtilities from "../../configurations/error-handler";
 import responseUtilities from "../../configurations/response";
 import { StatusCodes } from "../../configurations/statusCodes";
@@ -39,7 +39,7 @@ const paymentStatusService = errorUtilities.withServiceErrorHandling(
 
     const user = await User.findByPk(userId);
 
-    if (!user || user.get("applicationStatus") !== ApplicationStatus.AccessIssued) {
+    if (!user || !user.get("accessCodeHash")) {
       // Paid, but the access code isn't ready yet (shouldn't normally
       // happen given process-payment is synchronous, but covered defensively).
       return responseUtilities.handleServicesResponse(
@@ -50,7 +50,6 @@ const paymentStatusService = errorUtilities.withServiceErrorHandling(
     }
 
     const plaintext = user.get("accessCodePlaintext") as string | null;
-    const nin = user.get("accessCodeNin") as string | null;
 
     if (plaintext) {
       // Reveal exactly once.
@@ -64,7 +63,8 @@ const paymentStatusService = errorUtilities.withServiceErrorHandling(
       {
         status: "code_issued",
         accessCode: plaintext ?? undefined,
-        nin: nin ?? undefined,
+        accessCodeExpiresAt: (user.get("accessCodeExpiresAt") as Date | null)?.toISOString(),
+        maxTrials: user.get("accessCodeMaxTrials"),
       },
     );
   },

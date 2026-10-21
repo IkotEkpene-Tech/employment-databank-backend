@@ -5,9 +5,8 @@ import initiatePaymentService from "../services/initiate-payment.service";
 
 const initiatePayment = errorUtilities.withControllerErrorHandling(
   async (request: Request, response: Response) => {
-    const { nin } = request.body;
 
-    const result = await initiatePaymentService(request.user!.id, nin);
+    const result = await initiatePaymentService(request.user!.id);
 
     return responseUtilities.responseHandler(
       response,

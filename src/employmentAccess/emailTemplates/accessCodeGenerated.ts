@@ -1,6 +1,6 @@
 export const accessCodeGeneratedTemplate = (
   accessCode: string,
-  maskedNin: string,
+  maxTrials: number,
 ) => ({
   subject: "Your access code for the Ikot Ekpene Job & Support Registration Portal",
   htmlBody: `<div style="background:#f4f8f5;padding:40px 20px;font-family:Arial,sans-serif;">
@@ -16,8 +16,7 @@ export const accessCodeGeneratedTemplate = (
       <p style="font-size:16px;color:#333333;">Hello,</p>
 
       <p style="font-size:15px;line-height:1.7;color:#555555;">
-        Your payment was received for the application linked to NIN ending in <strong>${maskedNin}</strong>.
-        Use the access code below together with this NIN whenever you want to start or resume your application.
+        Your payment was received. Use the access code below, together with your NIN, whenever you want to start or resume your application.
       </p>
 
       <div style="background:#fff6ed;border:1px solid #ffd7b0;padding:20px;border-radius:16px;margin:24px 0;text-align:center;">
@@ -36,9 +35,11 @@ export const accessCodeGeneratedTemplate = (
 
         <ul style="padding-left:18px;margin:0;color:#555555;font-size:14px;line-height:1.8;">
           <li>Your access code will expire after 72 hours.</li>
-          <li>You can use it as many times as you need until it expires, to start or resume your application.</li>
+          <li>It allows <strong>${maxTrials} NIN verification attempts</strong>. Every NIN you submit that gets a response from the verification service uses one attempt, even if the NIN turns out to be wrong — so double-check it before you submit.</li>
+          <li>Attempts that fail because of a system or network problem are not counted.</li>
+          <li>Once your NIN is confirmed, you can resume your application with the same code until it expires, without using more attempts.</li>
           <li>Please save it somewhere safe — it will only be shown once on the portal.</li>
-          <li>If it expires before you finish, you will need to pay again for a new one.</li>
+          <li>If it expires, or you use all your attempts, before you finish, you will need to pay again for a new one.</li>
         </ul>
       </div>
 
