@@ -5,10 +5,11 @@ import errorUtilities from "../../configurations/error-handler";
 import responseUtilities from "../../configurations/response";
 import { StatusCodes } from "../../configurations/statusCodes";
 import { queueEmail } from "../../configurations/email-queue";
-import { generateAccessCode, hashSecret, maskNin } from "../../auth/auth.helpers";
+import { generateAccessCode, hashSecret } from "../../auth/auth.helpers";
 import { paymentSuccessfulTemplate } from "../emailTemplates/paymentSuccessful";
 import { accessCodeGeneratedTemplate } from "../emailTemplates/accessCodeGenerated";
 
+export const ACCESS_CODE_MAX_TRIALS = 4; // 4 x ~₦110 LumiID lookups inside a ₦500 code
 const ACCESS_CODE_TTL_MS = 72 * 60 * 60 * 1000; // 72 hours
 
 /**
@@ -69,13 +70,20 @@ const processPaymentService = errorUtilities.withServiceErrorHandling(
         "accessCodeExpiresAt",
         new Date(Date.now() + ACCESS_CODE_TTL_MS),
       );
-      user.set("applicationStatus", ApplicationStatus.AccessIssued);
+      user.set("accessCodeMaxTrials", ACCESS_CODE_MAX_TRIALS);
+      user.set("accessCodeTrialsUsed", 0);
+      // A fresh code starts from a clean slate: drop any half-finished lookup.
+      user.set("ninVerificationHash", null);
+      user.set("ninVerificationData", null);
+      // Already-confirmed users (renewing an expired code) keep their status.
+      if (!user.get("ninHash")) {
+        user.set("applicationStatus", ApplicationStatus.AccessIssued);
+      }
       await user.save();
 
-      const nin = user.get("accessCodeNin") as string | null;
       const codeTemplate = accessCodeGeneratedTemplate(
         code,
-        nin ? maskNin(nin) : "----",
+        ACCESS_CODE_MAX_TRIALS,
       );
       await queueEmail({
         to: email,

@@ -3,18 +3,21 @@ import errorUtilities from "../../configurations/error-handler";
 import responseUtilities from "../../configurations/response";
 import { StatusCodes } from "../../configurations/statusCodes";
 import { hashForLookup } from "../../configurations/encryption";
-import { toTitleCase } from "../../configurations/utils";
 import { serializeUser } from "../../auth/auth.helpers";
-import verifyNIN from "../../configurations/nin-provider";
 import {
   assertLiveAccessCode,
   isAlreadyConfirmedForNin,
+  readNinCache,
 } from "./verify.service";
-import moment from "moment";
 
+/**
+ * Saves the NIN + identity details that POST /verify already fetched from
+ * the provider. Deliberately makes NO provider call of its own — one lookup
+ * per trial, never two.
+ */
 const confirmEmploymentAccessService = errorUtilities.withServiceErrorHandling(
   async (userId: string, nin: string, accessCode: string) => {
-    const user = await assertLiveAccessCode(userId, nin, accessCode);
+    const user = await assertLiveAccessCode(userId, accessCode);
 
     if (isAlreadyConfirmedForNin(user, nin)) {
       return responseUtilities.handleServicesResponse(
@@ -34,35 +37,24 @@ const confirmEmploymentAccessService = errorUtilities.withServiceErrorHandling(
       );
     }
 
-    const ninData = await verifyNIN(nin.trim());
+    const verified = readNinCache(user, nin);
+    if (!verified) {
+      throw errorUtilities.createError(
+        "Please verify this NIN before confirming it",
+        StatusCodes.BAD_REQUEST,
+      );
+    }
 
     user.set("nin", nin.trim());
     user.set("ninHash", ninHash);
-    // NIN providers commonly return names in inconsistent casing (NIMC data
-    // in particular tends to give lastname in ALL CAPS) — normalize to Title
-    // Case on the way in so every applicant's stored data looks the same,
-    // regardless of what the provider handed back.
-    user.set(
-      "firstName",
-      toTitleCase(ninData.firstname) ?? user.get("firstName"),
-    );
-    user.set("surname", toTitleCase(ninData.lastname) ?? user.get("surname"));
-    user.set(
-      "otherName",
-      toTitleCase(ninData.middlename) ?? user.get("otherName"),
-    );
-    user.set(
-      "gender",
-      ninData.gender
-        ? ninData.gender.trim().toLowerCase()
-        : (user.get("gender") as string | null),
-    );
-    if (ninData.birthdate) {
-      const parsed = moment(ninData.birthdate, "DD-MM-YYYY", true);
-      if (parsed.isValid()) {
-        user.set("dateOfBirth", parsed.format("YYYY-MM-DD") as any);
-      }
-    }
+    user.set("firstName", verified.firstName ?? (user.get("firstName") as string | null));
+    user.set("surname", verified.surname ?? (user.get("surname") as string | null));
+    user.set("otherName", verified.otherName ?? (user.get("otherName") as string | null));
+    user.set("gender", verified.gender ?? (user.get("gender") as string | null));
+    if (verified.dob) user.set("dateOfBirth", verified.dob as any);
+    if (verified.photo) user.set("photo", verified.photo);
+    user.set("ninVerificationHash", null);
+    user.set("ninVerificationData", null);
     user.set("applicationStatus", ApplicationStatus.NinVerified);
     await user.save();
 

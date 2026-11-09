@@ -50,14 +50,17 @@ export interface UserAttributes {
   certificateName?: string | null;
   certificateOfOrigin?: string | null;
   applicationStatus: ApplicationStatus;
-  // The employment-access gate: a paid-for access code, tied to whichever
-  // NIN it was purchased for. Reusable (not single-use) until it expires —
-  // the user re-enters nin + accessCode every time they resume a
-  // not-yet-submitted application.
-  accessCodeNin?: string | null;
-  accessCodeNinHash?: string | null;
+  // The employment-access gate: a paid-for access code, tied to the account
+  // (email) — not to a NIN. Reusable until it expires, but each NIN lookup
+  // against the provider burns one of accessCodeMaxTrials.
   accessCodeHash?: string | null;
   accessCodeExpiresAt?: Date | null;
+  accessCodeMaxTrials: number;
+  accessCodeTrialsUsed: number;
+  // Provider result for the NIN the user just verified, held (encrypted)
+  // until they confirm it, so confirming never costs a second provider call.
+  ninVerificationHash?: string | null;
+  ninVerificationData?: string | null;
   // Plaintext copy of the current access code, cleared the first time
   // GET /employment-access/payment-status reveals it. accessCodeHash (above)
   // is what verify/confirm actually check, and is never cleared by reveal.
@@ -304,28 +307,6 @@ User.init(
       },
     },
 
-    accessCodeNin: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-      get() {
-        const raw = this.getDataValue("accessCodeNin");
-        if (!raw) return null;
-        try {
-          return decrypt(JSON.parse(raw));
-        } catch {
-          return null;
-        }
-      },
-      set(value: string) {
-        this.setDataValue("accessCodeNin", JSON.stringify(encrypt(value)));
-      },
-    },
-
-    accessCodeNinHash: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-
     accessCodeHash: {
       type: DataTypes.TEXT,
       allowNull: true,
@@ -334,6 +315,43 @@ User.init(
     accessCodeExpiresAt: {
       type: DataTypes.DATE,
       allowNull: true,
+    },
+
+    accessCodeMaxTrials: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 4,
+    },
+
+    accessCodeTrialsUsed: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
+
+    ninVerificationHash: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+
+    ninVerificationData: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      get() {
+        const raw = this.getDataValue("ninVerificationData");
+        if (!raw) return null;
+        try {
+          return decrypt(JSON.parse(raw));
+        } catch {
+          return null;
+        }
+      },
+      set(value: string | null) {
+        this.setDataValue(
+          "ninVerificationData",
+          value ? JSON.stringify(encrypt(value)) : null,
+        );
+      },
     },
 
     accessCodePlaintext: {

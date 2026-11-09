@@ -59,6 +59,8 @@ export const serializeUser = (user: User) => {
     otherName: json.otherName ?? undefined,
     dob: json.dateOfBirth ?? undefined,
     gender: json.gender ?? undefined,
+    // NIN-record photo (data: URL), saved when the NIN is confirmed.
+    photo: json.photo ?? undefined,
     ninLast4: json.nin ? String(json.nin).slice(-4) : undefined,
   };
 };
