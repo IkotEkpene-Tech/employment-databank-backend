@@ -26,8 +26,6 @@ const accessCodeSchema = Joi.string().trim().length(8).required().messages({
   "string.length": "Access code must be exactly 8 characters",
 });
 
-const initiatePaymentSchema = Joi.object({ nin: ninSchema });
-
 const verifySchema = Joi.object({
   nin: ninSchema,
   accessCode: accessCodeSchema,
@@ -40,12 +38,11 @@ router.post(
   "/initiate-payment",
   authenticate,
   limiter,
-  validate(initiatePaymentSchema),
   initiatePayment,
 );
 router.get("/payment-status", authenticate, paymentStatus);
 router.get("/status", authenticate, status);
-router.post("/verify", authenticate, validate(verifySchema), verify);
+router.post("/verify", authenticate, limiter, validate(verifySchema), verify);
 router.post("/confirm", authenticate, validate(verifySchema), confirm);
 
 export default router;
